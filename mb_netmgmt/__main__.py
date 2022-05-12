@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 # This file is part of the project mb-netmgmt
 #
 # (C) 2022 Deutsche Telekom AG
@@ -75,7 +73,7 @@ class Protocol:
 
 if __name__ == "__main__":
     protocol_name = sys.argv[1]
-    protocol = importlib.import_module(protocol_name)
+    protocol = importlib.import_module(f"mb_netmgmt.{protocol_name}")
 
     args = json.loads(sys.argv[2])
     port = args["port"]

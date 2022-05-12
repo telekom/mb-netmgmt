@@ -25,7 +25,7 @@ from socketserver import DatagramRequestHandler, ThreadingUDPServer, UDPServer
 from scapy.asn1.asn1 import ASN1_Class_UNIVERSAL
 from scapy.layers.snmp import SNMP, SNMPbulk, SNMPresponse, SNMPvarbind
 
-from mb_netmgmt.mb_proto import Protocol
+from mb_netmgmt.__main__ import Protocol
 
 Server = ThreadingUDPServer
 

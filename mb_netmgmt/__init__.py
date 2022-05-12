@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
+"""Network Management Protocols for Mountebank"""
+__version__ = "0.0.1"
+
 import os
 import subprocess
 import time

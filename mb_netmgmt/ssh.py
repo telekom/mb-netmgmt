@@ -23,7 +23,7 @@ from socketserver import BaseRequestHandler, TCPServer
 
 import paramiko
 
-from mb_netmgmt.mb_proto import Protocol
+from mb_netmgmt.__main__ import Protocol
 
 Server = TCPServer
 stopped = False

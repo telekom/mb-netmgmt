@@ -22,9 +22,8 @@ SNMP, Telnet, SSH and NETCONF implementation for [Mountebank](https://www.mbtest
 
 ```sh
 $ npm install -g mountebank
-
-$ cd mb_netmgmt
-
+$ python -m build
+$ pip install dist/mb_netmgmt-0.0.1-py2.py3-none-any.whl
 $ mb
 info: [mb:2525] Loaded custom protocol snmp
 info: [mb:2525] Loaded custom protocol telnet

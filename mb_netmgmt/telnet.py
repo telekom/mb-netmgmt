@@ -24,7 +24,7 @@ from socketserver import StreamRequestHandler, TCPServer
 
 import requests
 
-from mb_netmgmt.mb_proto import Protocol
+from mb_netmgmt.__main__ import Protocol
 
 Server = TCPServer
 
