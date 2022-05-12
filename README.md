@@ -18,6 +18,22 @@
 
 SNMP, Telnet, SSH and NETCONF implementation for [Mountebank](https://www.mbtest.org/)
 
+## Usage
+
+```sh
+$ npm install -g mountebank
+
+$ cd mb_netmgmt
+
+$ mb
+info: [mb:2525] Loaded custom protocol snmp
+info: [mb:2525] Loaded custom protocol telnet
+info: [mb:2525] Loaded custom protocol netconf
+info: [mb:2525] Loaded custom protocol ssh
+info: [mb:2525] mountebank v2.6.0 now taking orders - point your browser to http://localhost:2525/ for help
+```
+
+For more details, have a look at the [Mountebank documentation](https://www.mbtest.org/)
 
 ## Code of Conduct
 
