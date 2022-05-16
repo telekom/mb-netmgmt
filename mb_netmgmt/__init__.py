@@ -26,6 +26,7 @@ import time
 from contextlib import contextmanager
 
 import requests
+import yaml
 
 
 @contextmanager
@@ -48,3 +49,18 @@ def put_imposters(host, imposters):
         response.raise_for_status()
     except requests.HTTPError as e:
         raise RuntimeError(e.response.json()["errors"])
+
+
+def dump_imposters(host, name):
+    response = requests.get(
+        f"http://{host}:2525/imposters",
+        {"replayable": True, "removeProxies": True},
+    )
+    yaml.safe_dump(response.json(), open(f"{name}.yaml", "w"))
+
+
+def load_imposters(host, name):
+    put_imposters(
+        host,
+        yaml.safe_load(open(f"{name}.yaml").read())["imposters"],
+    )
