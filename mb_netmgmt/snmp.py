@@ -120,10 +120,3 @@ def decode(value):
         return value
     except UnicodeDecodeError:
         return b64encode(value).decode()
-
-
-def send_and_receive(host, port, request):
-    s = socket(type=SOCK_DGRAM)
-    s.connect((host, port))
-    s.send(request)
-    return s.recv(UDPServer.max_packet_size)
