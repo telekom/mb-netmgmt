@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 
 import os
 import subprocess
@@ -32,7 +32,6 @@ import yaml
 @contextmanager
 def mb(imposters):
     with subprocess.Popen("mb", cwd=os.path.dirname(__file__)) as mb:
-        time.sleep(1)
         try:
             put_imposters("localhost", imposters)
             yield mb
@@ -41,10 +40,15 @@ def mb(imposters):
 
 
 def put_imposters(host, imposters):
-    response = requests.put(
-        f"http://{host}:2525/imposters",
-        json={"imposters": imposters},
-    )
+    while True:
+        try:
+            response = requests.put(
+                f"http://{host}:2525/imposters",
+                json={"imposters": imposters},
+            )
+            break
+        except requests.ConnectionError:
+            time.sleep(1)
     try:
         response.raise_for_status()
     except requests.HTTPError as e:
