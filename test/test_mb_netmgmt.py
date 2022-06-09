@@ -15,7 +15,8 @@ def test_create_imposter(protocol):
 
 def test_ssh():
     with mb([{"protocol": "ssh", "port": port}]):
-        connect_ssh()
+        client = connect_ssh()
+        client.invoke_shell()
 
 
 def test_create_ssh_server():
