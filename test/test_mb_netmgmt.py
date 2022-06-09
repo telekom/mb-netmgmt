@@ -21,7 +21,7 @@ def test_ssh():
 def test_create_ssh_server():
     server = create_server(ssh, port, None)
     Thread(target=server.serve_forever).start()
-    connect_ssh()
+    connect_ssh().close()
     server.shutdown()
 
 
@@ -29,4 +29,4 @@ def connect_ssh():
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
     client.connect("localhost", port)
-    client.close()
+    return client
