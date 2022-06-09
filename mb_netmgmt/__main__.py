@@ -19,7 +19,9 @@
 
 import importlib
 import json
+import logging
 import sys
+import traceback
 
 import requests
 
@@ -27,11 +29,22 @@ import requests
 def create_server(protocol, port, callback_url):
     server_address = ("0.0.0.0", port)
     server = protocol.Server(server_address, protocol.Handler, bind_and_activate=False)
+    server.handle_error = handle_error
     server.callback_url = callback_url
     server.allow_reuse_address = True
     server.server_bind()
     server.server_activate()
     return server
+
+
+def handle_error(request, client_address):
+    line = "-" * 40
+    logging.error(
+        f"""{line}
+Exception occurred during processing of request from {client_address}
+{traceback.format_exc()}
+{line}"""
+    )
 
 
 class Protocol:
