@@ -19,7 +19,6 @@ def test_ssh():
 
 
 def test_create_ssh_server():
-    ssh.Handler.handle_request = lambda *args: None
     server = create_server(ssh, port, None)
     Thread(target=server.serve_forever).start()
     connect_ssh()
