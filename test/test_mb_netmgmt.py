@@ -1,4 +1,6 @@
+import os
 from threading import Thread
+
 import paramiko
 import pytest
 from mb_netmgmt import mb, ssh
@@ -14,6 +16,13 @@ def test_create_imposter(protocol):
 
 
 def test_ssh():
+    with mb([{"protocol": "ssh", "port": port}]):
+        client = connect_ssh()
+        client.invoke_shell()
+
+
+def test_ssh_proxy():
+    os.environ["NETCONF_HOSTNAME"] = "localhost"
     with mb([{"protocol": "ssh", "port": port}]):
         client = connect_ssh()
         client.invoke_shell()
