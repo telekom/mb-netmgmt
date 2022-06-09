@@ -16,9 +16,20 @@ def test_create_imposter(protocol):
 
 
 def test_ssh():
-    with mb([{"protocol": "ssh", "port": port}]):
+    prompt = b"prompt"
+    with mb(
+        [
+            {
+                "protocol": "ssh",
+                "port": port,
+                "stubs": [{"responses": [{"is": {"response": prompt}}]}],
+            }
+        ]
+    ):
         client = connect_ssh()
-        client.invoke_shell()
+        chan = client.invoke_shell()
+        out = chan.recv(1024)
+        assert out == prompt
 
 
 def test_ssh_proxy():
