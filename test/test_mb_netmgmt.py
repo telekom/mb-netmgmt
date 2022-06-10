@@ -33,7 +33,7 @@ def test_ssh():
 
 
 def test_ssh_proxy():
-    os.environ.update({"NETCONF_HOSTNAME": "localhost", "NETCONF_PORT": "22"})
+    os.environ["NETCONF_HOSTNAME"] = "localhost"
     with mb(
         [
             {

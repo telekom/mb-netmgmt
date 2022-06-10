@@ -55,6 +55,7 @@ class ParamikoServer(paramiko.ServerInterface):
 
 class Handler(BaseRequestHandler, Protocol):
     message_terminator = b"\n"
+    default_port = 22
 
     def handle(self):
         self.callback_url = self.server.callback_url
@@ -93,7 +94,7 @@ class Handler(BaseRequestHandler, Protocol):
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
         client.connect(
             os.environ["NETCONF_HOSTNAME"],
-            os.environ.get("NETCONF_PORT", 830),
+            os.environ.get("NETCONF_PORT", self.default_port),
             os.environ["NETCONF_USERNAME"],
             os.environ["NETCONF_PASSWORD"],
         )
