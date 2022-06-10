@@ -22,3 +22,7 @@ from mb_netmgmt.ssh import Server, Handler as SshHandler
 
 class Handler(SshHandler):
     message_terminator = b"]]>]]>"
+
+    def open_upstream(self):
+        SshHandler.open_upstream(self)
+        self.upstream_channel.invoke_subsystem("netconf")

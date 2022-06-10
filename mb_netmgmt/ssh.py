@@ -93,14 +93,13 @@ class Handler(BaseRequestHandler, Protocol):
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
         client.connect(
             os.environ["NETCONF_HOSTNAME"],
-            830,
+            os.environ.get("NETCONF_PORT", 830),
             os.environ["NETCONF_USERNAME"],
             os.environ["NETCONF_PASSWORD"],
         )
         transport: paramiko.Transport = client._transport
         self.upstream_channel = transport.open_session()
-        self.upstream_channel.invoke_subsystem("netconf")
-
+ 
     def read_proxy_response(self):
         return {"response": self.read_message(self.upstream_channel).decode()}
 

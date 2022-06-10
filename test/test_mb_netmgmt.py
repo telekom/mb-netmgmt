@@ -7,6 +7,7 @@ from mb_netmgmt import mb, ssh
 from mb_netmgmt.__main__ import create_server
 
 port = 8080
+prompt = b"prompt"
 
 
 @pytest.mark.parametrize("protocol", ["http", "snmp", "telnet", "netconf"])
@@ -16,7 +17,6 @@ def test_create_imposter(protocol):
 
 
 def test_ssh():
-    prompt = b"prompt"
     with mb(
         [
             {
@@ -33,10 +33,20 @@ def test_ssh():
 
 
 def test_ssh_proxy():
-    os.environ["NETCONF_HOSTNAME"] = "localhost"
-    with mb([{"protocol": "ssh", "port": port}]):
+    os.environ.update({"NETCONF_HOSTNAME": "localhost", "NETCONF_PORT": "22"})
+    with mb(
+        [
+            {
+                "protocol": "ssh",
+                "port": port,
+                "stubs": [{"responses": [{"is": {"response": prompt}}]}],
+            }
+        ]
+    ):
         client = connect_ssh()
-        client.invoke_shell()
+        chan = client.invoke_shell()
+        out = chan.recv(1024)
+        assert out == prompt
 
 
 def test_create_ssh_server():
