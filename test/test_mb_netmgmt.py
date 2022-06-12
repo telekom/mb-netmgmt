@@ -1,4 +1,3 @@
-import os
 from threading import Thread
 
 import paramiko
