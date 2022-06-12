@@ -21,7 +21,7 @@ def test_ssh():
             {
                 "protocol": "ssh",
                 "port": port,
-                "stubs": [{"responses": [{"is": {"response": prompt}}]}],
+                "stubs": [prompt_stub()],
             }
         ]
     ):
@@ -38,11 +38,7 @@ def test_ssh_proxy():
                 "protocol": "ssh",
                 "port": port,
                 "stubs": [
-                    {
-                        "responses": [
-                            {"is": {"response": prompt}},
-                        ]
-                    },
+                    prompt_stub(),
                     {
                         "responses": [
                             {"proxy": {"to": "localhost"}},
@@ -56,6 +52,10 @@ def test_ssh_proxy():
         chan = client.invoke_shell()
         out = chan.recv(1024)
         assert out == prompt
+
+
+def prompt_stub():
+    return {"responses": [{"is": {"response": prompt}}]}
 
 
 def test_create_ssh_server():
