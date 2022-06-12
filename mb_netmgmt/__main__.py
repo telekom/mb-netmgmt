@@ -86,6 +86,23 @@ class Protocol:
         response.raise_for_status()
         return response.json()
 
+    def get_to(self):
+        try:
+            imposter_response = requests.get(
+                self.server.callback_url.replace("/_requests", "")
+            )
+            stubs = imposter_response.json()["stubs"]
+            proxy = self.get_proxy(stubs[-1])
+            if not proxy:
+                proxy = self.get_proxy(stubs[0])
+            if proxy:
+                return proxy["to"]
+        except IndexError:
+            pass
+
+    def get_proxy(self, stub):
+        return stub["responses"][0].get("proxy")
+
 
 if __name__ == "__main__":
     protocol_name = sys.argv[1]

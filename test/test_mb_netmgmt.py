@@ -33,13 +33,23 @@ def test_ssh():
 
 
 def test_ssh_proxy():
-    os.environ["NETCONF_HOSTNAME"] = "localhost"
     with mb(
         [
             {
                 "protocol": "ssh",
                 "port": port,
-                "stubs": [{"responses": [{"is": {"response": prompt}}]}],
+                "stubs": [
+                    {
+                        "responses": [
+                            {"is": {"response": prompt}},
+                        ]
+                    },
+                    {
+                        "responses": [
+                            {"proxy": {"to": "localhost"}},
+                        ]
+                    },
+                ],
             }
         ]
     ):

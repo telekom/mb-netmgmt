@@ -22,8 +22,6 @@ import telnetlib
 import time
 from socketserver import StreamRequestHandler, TCPServer
 
-import requests
-
 from mb_netmgmt.__main__ import Protocol
 
 Server = TCPServer
@@ -66,21 +64,11 @@ class Handler(StreamRequestHandler, Protocol):
         return {"response": self.telnet.read_until(self.command_prompt).decode()}
 
     def handle_username_prompt(self):
-        imposter_response = requests.get(
-            self.server.callback_url.replace("/_requests", "")
-        )
         username_prompt = b"Username: "
-        stubs = imposter_response.json()["stubs"]
-        try:
-            proxy = self.get_proxy(stubs[-1])
-            if not proxy:
-                proxy = self.get_proxy(stubs[0])
-            if proxy:
-                to = proxy["to"]
-                self.telnet = telnetlib.Telnet(to)
-                username_prompt = self.telnet.read_until(username_prompt)
-        except IndexError:
-            pass
+        to = self.get_to()
+        if to:
+            self.telnet = telnetlib.Telnet(to)
+            username_prompt = self.telnet.read_until(username_prompt)
         self.wfile.write(username_prompt)
 
     def read_password(self):
@@ -92,9 +80,6 @@ class Handler(StreamRequestHandler, Protocol):
     def handle_username(self):
         self.command_prompt = b"Password: "
         self.handle_request({"command": self.username.decode()}, None)
-
-    def get_proxy(self, stub):
-        return stub["responses"][0].get("proxy")
 
 
 def extract_username(byte_string):

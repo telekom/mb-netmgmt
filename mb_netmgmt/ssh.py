@@ -88,12 +88,13 @@ class Handler(BaseRequestHandler, Protocol):
         self.channel.sendall(response)
 
     def open_upstream(self):
-        if "NETCONF_HOSTNAME" not in os.environ:
+        to = self.get_to()
+        if not to:
             return
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
         client.connect(
-            os.environ["NETCONF_HOSTNAME"],
+            to,
             os.environ.get("NETCONF_PORT", self.default_port),
             os.environ["NETCONF_USERNAME"],
             os.environ["NETCONF_PASSWORD"],
