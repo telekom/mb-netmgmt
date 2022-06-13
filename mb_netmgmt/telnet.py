@@ -67,7 +67,7 @@ class Handler(StreamRequestHandler, Protocol):
         username_prompt = b"Username: "
         to = self.get_to()
         if to:
-            self.telnet = telnetlib.Telnet(to)
+            self.telnet = telnetlib.Telnet(to.hostname)
             username_prompt = self.telnet.read_until(username_prompt)
         self.wfile.write(username_prompt)
 

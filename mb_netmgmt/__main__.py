@@ -23,6 +23,7 @@ import logging
 import sys
 import traceback
 from socketserver import BaseServer
+from urllib.parse import urlparse
 
 import requests
 
@@ -96,7 +97,7 @@ class Protocol:
             if not proxy:
                 proxy = self.get_proxy(stubs[0])
             if proxy:
-                return proxy["to"]
+                return urlparse(proxy["to"])
         except IndexError:
             pass
 

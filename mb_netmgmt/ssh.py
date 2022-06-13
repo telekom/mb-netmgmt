@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
-import os
 import re
 from socketserver import BaseRequestHandler, TCPServer
 
@@ -94,14 +93,11 @@ class Handler(BaseRequestHandler, Protocol):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
         client.connect(
-            to.split("/")[-1],
-            os.environ.get("NETCONF_PORT", self.default_port),
-            os.environ["NETCONF_USERNAME"],
-            os.environ["NETCONF_PASSWORD"],
+            to.hostname, to.port or self.default_port, to.username, to.password
         )
         transport: paramiko.Transport = client._transport
         self.upstream_channel = transport.open_session()
- 
+
     def read_proxy_response(self):
         return {"response": self.read_message(self.upstream_channel).decode()}
 

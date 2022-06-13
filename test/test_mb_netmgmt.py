@@ -1,3 +1,4 @@
+import os
 from threading import Thread
 
 import paramiko
@@ -41,7 +42,11 @@ def test_ssh_proxy():
                     prompt_stub(),
                     {
                         "responses": [
-                            {"proxy": {"to": "ssh://localhost"}},
+                            {
+                                "proxy": {
+                                    "to": f"ssh://{os.environ['NETCONF_USERNAME']}:{os.environ['NETCONF_PASSWORD']}@localhost"
+                                }
+                            },
                         ]
                     },
                 ],
