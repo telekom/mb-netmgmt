@@ -94,7 +94,7 @@ class Handler(BaseRequestHandler, Protocol):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
         client.connect(
-            to,
+            to.split("/")[-1],
             os.environ.get("NETCONF_PORT", self.default_port),
             os.environ["NETCONF_USERNAME"],
             os.environ["NETCONF_PASSWORD"],

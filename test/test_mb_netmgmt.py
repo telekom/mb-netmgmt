@@ -41,7 +41,7 @@ def test_ssh_proxy():
                     prompt_stub(),
                     {
                         "responses": [
-                            {"proxy": {"to": "localhost"}},
+                            {"proxy": {"to": "ssh://localhost"}},
                         ]
                     },
                 ],
