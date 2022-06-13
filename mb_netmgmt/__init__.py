@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 
 import os
 import subprocess
@@ -66,7 +66,8 @@ def dump_imposters(host, name):
 
 
 def load_imposters(host, name):
-    put_imposters(
-        host,
-        yaml.safe_load(open(f"{name}.yaml").read())["imposters"],
-    )
+    put_imposters(host, read_imposters(name))
+
+
+def read_imposters(name):
+    return yaml.safe_load(open(f"{name}.yaml").read())["imposters"]
