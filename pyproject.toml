@@ -5,3 +5,4 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "mb_netmgmt"
 dynamic = ["version", "description"]
+dependencies = ["scapy", "requests", "paramiko", "pyaml"]
