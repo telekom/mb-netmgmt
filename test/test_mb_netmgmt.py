@@ -17,15 +17,7 @@ def test_create_imposter(protocol):
 
 
 def test_ssh():
-    with mb(
-        [
-            {
-                "protocol": "ssh",
-                "port": port,
-                "stubs": [prompt_stub()],
-            }
-        ]
-    ):
+    with mb([{"protocol": "ssh", "port": port, "stubs": [prompt_stub()]}], "debug"):
         client = connect_ssh()
         chan = client.invoke_shell()
         out = chan.recv(1024)

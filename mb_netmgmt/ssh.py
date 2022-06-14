@@ -65,6 +65,7 @@ class Handler(BaseRequestHandler, Protocol):
         t.start_server(server=ParamikoServer())
         self.channel = t.accept()
         self.open_upstream()
+        self.handle_prompt()
         while not stopped:
             request, request_id = self.read_request()
             self.handle_request(request, request_id)
@@ -96,9 +97,8 @@ class Handler(BaseRequestHandler, Protocol):
         )
         transport: paramiko.Transport = client._transport
         self.upstream_channel = transport.open_session()
-        self.read_upstream_prompt()
 
-    def read_upstream_prompt(self):
+    def handle_prompt(self):
         self.handle_request({"command": ""}, "")
 
     def read_proxy_response(self):
