@@ -96,6 +96,10 @@ class Handler(BaseRequestHandler, Protocol):
         )
         transport: paramiko.Transport = client._transport
         self.upstream_channel = transport.open_session()
+        self.read_upstream_prompt()
+
+    def read_upstream_prompt(self):
+        self.handle_request({"command": ""}, "")
 
     def read_proxy_response(self):
         return {"response": self.read_message(self.upstream_channel).decode()}
