@@ -65,7 +65,6 @@ class Handler(BaseRequestHandler, Protocol):
         t.start_server(server=ParamikoServer())
         self.channel = t.accept()
         self.open_upstream()
-        self.handle_request({"command": ""}, "")
         while not stopped:
             request, request_id = self.read_request()
             self.handle_request(request, request_id)
