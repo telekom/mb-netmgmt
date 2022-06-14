@@ -112,6 +112,7 @@ if __name__ == "__main__":
     args = json.loads(sys.argv[2])
     port = args["port"]
     callback_url = args["callbackURLTemplate"].replace(":port", str(port))
+    logging.basicConfig(level=args["loglevel"].upper())
 
     server = create_server(protocol, port, callback_url)
     print(protocol_name, flush=True)
