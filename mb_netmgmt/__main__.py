@@ -55,6 +55,7 @@ class Protocol:
     def handle_request(self, request, request_id):
         mb_response = self.post_request(request)
         if "response" not in mb_response:
+            logging.debug("send_upstream: %s", request)
             self.send_upstream(request, request_id)
         response = self.get_response(mb_response)
         self.respond(response, request_id)
@@ -64,6 +65,7 @@ class Protocol:
             return mb_response["response"]
         except KeyError:
             proxy_response = self.read_proxy_response()
+            logging.debug("proxy_response: %s", proxy_response)
             response = requests.post(
                 mb_response["callbackURL"], json={"proxyResponse": proxy_response}
             )
