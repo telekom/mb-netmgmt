@@ -53,7 +53,7 @@ class ParamikoServer(paramiko.ServerInterface):
 
 
 class Handler(BaseRequestHandler, Protocol):
-    message_terminator = b"\n"
+    message_terminators = [b"\n"]
     default_port = 22
 
     def handle(self):
@@ -106,8 +106,12 @@ class Handler(BaseRequestHandler, Protocol):
 
     def read_message(self, channel):
         message = b""
-        while self.message_terminator not in message and not stopped:
+        end_of_message = False
+        while not end_of_message and not stopped:
             message += channel.recv(1024)
+            for terminator in self.message_terminators:
+                if terminator in message:
+                    end_of_message = True
         return message
 
 

@@ -21,7 +21,7 @@ from mb_netmgmt.ssh import Server, Handler as SshHandler
 
 
 class Handler(SshHandler):
-    message_terminator = b"]]>]]>"
+    message_terminators = [b"]]>]]>", b"\n##\n"]
     default_port = 830
 
     def open_upstream(self):
