@@ -6,6 +6,7 @@ import paramiko
 import pytest
 from mb_netmgmt import mb, netconf, ssh
 from mb_netmgmt.__main__ import create_server
+import logging
 
 port = 8080
 prompt = b"prompt"
@@ -86,10 +87,8 @@ def test_create_netconf_server():
 
 def mock_post_request(handler, request):
     command = request["command"]
-    if command == "":
-        return {"response": {"response": "<hello/>]]>]]>"}}
     if "<nc:hello" in command:
-        return {"response": {"response": ""}}
+        return {"response": {"response": "<hello/>]]>]]>"}}
     return {
         "response": {
             "response": '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>]]>]]>'
