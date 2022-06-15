@@ -77,7 +77,7 @@ def test_create_netconf_server():
     server = create_server(netconf, port, None)
     Thread(target=server.serve_forever).start()
     with ncclient.manager.connect(
-        host="localhost", port=port, hostkey_verify=False
+        host="localhost", port=port, password="", hostkey_verify=False
     ) as m:
         m.get_config("running")
     ssh.stopped = True
