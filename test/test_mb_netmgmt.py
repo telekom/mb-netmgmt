@@ -1,9 +1,10 @@
 import os
 from threading import Thread
 
+import ncclient.manager
 import paramiko
 import pytest
-from mb_netmgmt import mb, ssh
+from mb_netmgmt import mb, netconf, ssh
 from mb_netmgmt.__main__ import create_server
 
 port = 8080
@@ -67,3 +68,16 @@ def connect_ssh():
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
     client.connect("localhost", port)
     return client
+
+
+def test_create_netconf_server():
+    port = 8830
+    netconf.Handler.open_upstream = lambda handler: None
+    netconf.Handler.post_request = lambda *args: {
+        "response": {"response": "<hello/>]]>]]>"}
+    }
+    server = create_server(netconf, port, None)
+    Thread(target=server.serve_forever).start()
+    ncclient.manager.connect(host="localhost", port=port, hostkey_verify=False)
+    ssh.stopped = True
+    server.shutdown()

@@ -27,6 +27,3 @@ class Handler(SshHandler):
     def open_upstream(self):
         SshHandler.open_upstream(self)
         self.upstream_channel.invoke_subsystem("netconf")
-
-    def handle_prompt(self):
-        pass  # NETCONF does not have a prompt
