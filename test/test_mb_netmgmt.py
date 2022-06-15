@@ -6,7 +6,6 @@ import paramiko
 import pytest
 from mb_netmgmt import mb, netconf, ssh
 from mb_netmgmt.__main__ import create_server
-import logging
 
 port = 8080
 prompt = b"prompt"
