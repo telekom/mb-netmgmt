@@ -73,11 +73,25 @@ def connect_ssh():
 def test_create_netconf_server():
     port = 8830
     netconf.Handler.open_upstream = lambda handler: None
-    netconf.Handler.post_request = lambda *args: {
-        "response": {"response": "<hello/>]]>]]>"}
-    }
+    netconf.Handler.post_request = mock_post_request
     server = create_server(netconf, port, None)
     Thread(target=server.serve_forever).start()
-    ncclient.manager.connect(host="localhost", port=port, hostkey_verify=False)
+    with ncclient.manager.connect(
+        host="localhost", port=port, hostkey_verify=False
+    ) as m:
+        m.get_config("running")
     ssh.stopped = True
     server.shutdown()
+
+
+def mock_post_request(handler, request):
+    command = request["command"]
+    if command == "":
+        return {"response": {"response": "<hello/>]]>]]>"}}
+    if "<nc:hello" in command:
+        return {"response": {"response": ""}}
+    return {
+        "response": {
+            "response": '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>]]>]]>'
+        }
+    }
