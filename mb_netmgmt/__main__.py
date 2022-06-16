@@ -53,9 +53,9 @@ Exception occurred during processing of request from {client_address}
 
 class Protocol:
     def handle_request(self, request, request_id):
+        logging.debug("handle_request: %s", request)
         mb_response = self.post_request(request)
         if "response" not in mb_response:
-            logging.debug("send_upstream: %s", request)
             self.send_upstream(request, request_id)
         response = self.get_response(mb_response)
         self.respond(response, request_id)
