@@ -113,6 +113,7 @@ def test_netconf_upstream():
             [
                 {
                     "responses": [
+                        {"is": {"response": "<hello/>" + MSG_DELIM.decode()}},
                         {"is": create_proxy_response("")},
                     ]
                 },
