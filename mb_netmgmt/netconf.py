@@ -26,7 +26,10 @@ class Handler(SshHandler):
 
     def open_upstream(self):
         SshHandler.open_upstream(self)
-        self.upstream_channel.invoke_subsystem("netconf")
+        try:
+            self.upstream_channel.invoke_subsystem("netconf")
+        except AttributeError:
+            pass
 
     def handle_prompt(self):
         pass
