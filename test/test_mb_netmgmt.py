@@ -1,11 +1,13 @@
 import os
 from threading import Thread
+from urllib.parse import urlparse
 
 import ncclient.manager
 import paramiko
 import pytest
 from mb_netmgmt import mb, netconf, ssh
 from mb_netmgmt.__main__ import create_server
+from ncclient.transport.ssh import MSG_DELIM
 
 port = 8080
 prompt = b"prompt"
@@ -13,12 +15,12 @@ prompt = b"prompt"
 
 @pytest.mark.parametrize("protocol", ["http", "snmp", "telnet", "netconf"])
 def test_create_imposter(protocol):
-    with mb([{"protocol": protocol, "port": port}]):
+    with mb(imposters(protocol, None)):
         pass
 
 
 def test_ssh():
-    with mb([{"protocol": "ssh", "port": port, "stubs": [prompt_stub()]}], "debug"):
+    with mb(imposters("ssh", [prompt_stub()]), "debug"):
         client = connect_ssh()
         chan = client.invoke_shell()
         out = chan.recv(1024)
@@ -27,24 +29,21 @@ def test_ssh():
 
 def test_ssh_proxy():
     with mb(
-        [
-            {
-                "protocol": "ssh",
-                "port": port,
-                "stubs": [
-                    prompt_stub(),
-                    {
-                        "responses": [
-                            {
-                                "proxy": {
-                                    "to": f"ssh://{os.environ['NETCONF_USERNAME']}:{os.environ['NETCONF_PASSWORD']}@localhost"
-                                }
-                            },
-                        ]
-                    },
-                ],
-            }
-        ]
+        imposters(
+            "ssh",
+            [
+                prompt_stub(),
+                {
+                    "responses": [
+                        {
+                            "proxy": {
+                                "to": f"ssh://{os.environ['NETCONF_USERNAME']}:{os.environ['NETCONF_PASSWORD']}@localhost"
+                            }
+                        },
+                    ]
+                },
+            ],
+        )
     ):
         client = connect_ssh()
         chan = client.invoke_shell()
@@ -93,3 +92,7 @@ def mock_post_request(handler, request):
             "response": '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>]]>]]>'
         }
     }
+
+
+def imposters(protocol, stubs):
+    return [{"protocol": protocol, "port": port, "stubs": stubs}]
