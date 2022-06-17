@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
-import time
+from queue import Queue
 
 from ncclient.manager import connect
 from ncclient.transport import SessionListener
@@ -43,23 +43,21 @@ class Handler(SshHandler):
             hostkey_verify=False,
         )
         session = self.manager._session
-        self.listener = Listener()
-        session.add_listener(self.listener)
+        listener = Listener()
+        self.queue = listener.queue
+        session.add_listener(listener)
         self.upstream_channel = session._channel
 
     def handle_prompt(self):
         pass
 
     def read_proxy_response(self):
-        while True:
-            try:
-                self.listener.raw
-                break
-            except AttributeError:
-                time.sleep(1)
-        return {"response": self.listener.raw + MSG_DELIM.decode()}
+        return {"response": self.queue.get() + MSG_DELIM.decode()}
 
 
 class Listener(SessionListener):
+    def __init__(self):
+        self.queue = Queue()
+
     def callback(self, root, raw):
-        self.raw = raw
+        self.queue.put(raw)
