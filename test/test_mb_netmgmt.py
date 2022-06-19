@@ -107,6 +107,10 @@ def test_netconf_upstream():
     Handler.handle = lambda handler: None
     Handler.get_to = lambda handler: urlparse(f"netconf://localhost:{port}")
     handler = Handler(None, None, None)
+    expected_proxy_response = (
+        '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>'
+        + MSG_DELIM.decode()
+    )
     with mb(
         imposter(
             "netconf",
@@ -114,7 +118,7 @@ def test_netconf_upstream():
                 {
                     "responses": [
                         {"is": {"response": "<hello/>" + MSG_DELIM.decode()}},
-                        {"is": create_proxy_response("")},
+                        {"is": {"response": expected_proxy_response}},
                     ]
                 },
             ],
@@ -129,7 +133,10 @@ def test_netconf_upstream():
             42,
         )
         proxy_response = handler.read_proxy_response()
-        assert proxy_response == create_proxy_response("42")
+        assert (
+            ssh.replace_message_id(proxy_response["response"], "")
+            == expected_proxy_response
+        )
 
 
 def imposter(protocol, stubs):

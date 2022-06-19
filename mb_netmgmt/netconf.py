@@ -17,10 +17,8 @@
 # You should have received a copy of the GNU General Public License
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
-from queue import Queue
-
+from lxml import etree
 from ncclient.manager import connect
-from ncclient.transport import SessionListener
 from ncclient.transport.ssh import END_DELIM, MSG_DELIM, PORT_NETCONF_DEFAULT
 
 from mb_netmgmt.ssh import Handler as SshHandler
@@ -42,22 +40,14 @@ class Handler(SshHandler):
             password=to.password,
             hostkey_verify=False,
         )
-        session = self.manager._session
-        listener = Listener()
-        self.queue = listener.queue
-        session.add_listener(listener)
-        self.upstream_channel = session._channel
 
     def handle_prompt(self):
         pass
 
     def read_proxy_response(self):
-        return {"response": self.queue.get() + MSG_DELIM.decode()}
+        return {"response": self.rpc_reply.xml + MSG_DELIM.decode()}
 
-
-class Listener(SessionListener):
-    def __init__(self):
-        self.queue = Queue()
-
-    def callback(self, root, raw):
-        self.queue.put(raw)
+    def send_upstream(self, request, request_id):
+        self.rpc_reply = self.manager.rpc(
+            etree.XML(request["command"][: -len(MSG_DELIM)])
+        )
