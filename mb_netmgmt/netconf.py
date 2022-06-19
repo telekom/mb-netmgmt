@@ -49,5 +49,5 @@ class Handler(SshHandler):
 
     def send_upstream(self, request, request_id):
         self.rpc_reply = self.manager.rpc(
-            etree.XML(request["command"][: -len(MSG_DELIM)])
+            etree.XML(request["command"][: -len(MSG_DELIM)])[0]
         )
