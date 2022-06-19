@@ -121,9 +121,12 @@ def test_netconf_upstream():
         )
     ):
         handler.open_upstream()
-        handler.upstream_channel.send(
-            '<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="42"><get-config>running</get-config></rpc>'
-            + MSG_DELIM.decode()
+        handler.send_upstream(
+            {
+                "command": '<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="42"><get-config>running</get-config></rpc>'
+                + MSG_DELIM.decode()
+            },
+            42,
         )
         proxy_response = handler.read_proxy_response()
         assert proxy_response == create_proxy_response("42")
