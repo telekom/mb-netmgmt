@@ -1,7 +1,7 @@
 FROM bbyars/mountebank
 USER root
-RUN apk add --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-    py3-ncclient \
+RUN apk add \
+    py3-lxml \
     py3-paramiko \
     py3-pip \
     py3-requests \
