@@ -116,10 +116,21 @@ def test_netconf_upstream():
             "netconf",
             [
                 {
+                    "predicates": [
+                        {
+                            "endsWith": {
+                                "command": "<nc:get-config>running</nc:get-config></nc:rpc>]]>]]>"
+                            }
+                        }
+                    ],
                     "responses": [
-                        {"is": {"response": "<hello/>" + MSG_DELIM.decode()}},
                         {"is": {"response": expected_proxy_response}},
                     ],
+                },
+                {
+                    "responses": [
+                        {"is": {"response": "<hello/>" + MSG_DELIM.decode()}},
+                    ]
                 },
             ],
         ),

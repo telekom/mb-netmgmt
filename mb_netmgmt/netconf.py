@@ -82,6 +82,6 @@ class Listener(SessionListener):
         self.handle_request = handle_request
 
     def callback(self, root, raw):
-        request = {"command": replace_message_id(raw, "")}
+        request = {"command": replace_message_id(raw, "") + MSG_DELIM.decode()}
         request_id = get_message_id(raw)
         self.handle_request(request, request_id)
