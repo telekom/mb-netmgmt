@@ -103,7 +103,7 @@ def test_netconf_upstream():
     from mb_netmgmt.netconf import Handler
 
     global port
-    port = 8830
+    port = 8831
     Handler.handle = lambda handler: None
     Handler.get_to = lambda handler: urlparse(f"netconf://localhost:{port}")
     handler = Handler(None, None, None)
@@ -116,24 +116,14 @@ def test_netconf_upstream():
             "netconf",
             [
                 {
-                    "predicates": [
-                        {
-                            "endsWith": {
-                                "command": "<nc:get-config>running</nc:get-config></nc:rpc>]]>]]>"
-                            }
-                        }
-                    ],
                     "responses": [
+                        {"is": {"response": "<hello/>" + MSG_DELIM.decode()}},
                         {"is": {"response": expected_proxy_response}},
                     ],
                 },
-                {
-                    "responses": [
-                        {"is": {"response": "<hello/>" + MSG_DELIM.decode()}},
-                    ]
-                },
             ],
-        )
+        ),
+        "debug",
     ):
         handler.open_upstream()
         handler.send_upstream(
@@ -144,10 +134,7 @@ def test_netconf_upstream():
             42,
         )
         proxy_response = handler.read_proxy_response()
-        assert (
-            ssh.replace_message_id(proxy_response["response"], "")
-            == expected_proxy_response
-        )
+        assert proxy_response["response"] == expected_proxy_response
 
 
 def imposter(protocol, stubs):

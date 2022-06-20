@@ -18,16 +18,30 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 from lxml import etree
+from ncclient.devices.default import DefaultDeviceHandler
 from ncclient.manager import connect
-from ncclient.transport.ssh import END_DELIM, MSG_DELIM, PORT_NETCONF_DEFAULT
+from ncclient.transport.parser import DefaultXMLParser
+from ncclient.transport.session import SessionListener
+from ncclient.transport.ssh import (
+    END_DELIM,
+    MSG_DELIM,
+    PORT_NETCONF_DEFAULT,
+    SSHSession,
+)
 
 from mb_netmgmt.ssh import Handler as SshHandler
-from mb_netmgmt.ssh import Server
+from mb_netmgmt.ssh import Server, get_message_id, replace_message_id
 
 
 class Handler(SshHandler):
     message_terminators = [MSG_DELIM, END_DELIM]
     default_port = 830
+
+    def __init__(self, request, client_address, server):
+        session = SSHSession(DefaultDeviceHandler())
+        session.add_listener(Listener(super().handle_request))
+        self.parser = DefaultXMLParser(session)
+        super().__init__(request, client_address, server)
 
     def open_upstream(self):
         to = self.get_to()
@@ -45,9 +59,29 @@ class Handler(SshHandler):
         pass
 
     def read_proxy_response(self):
-        return {"response": self.rpc_reply.xml + MSG_DELIM.decode()}
+        return {
+            "response": replace_message_id(self.rpc_reply.xml, "") + MSG_DELIM.decode()
+        }
 
     def send_upstream(self, request, request_id):
         self.rpc_reply = self.manager.rpc(
             etree.XML(request["command"][: -len(MSG_DELIM)])[0]
         )
+
+    def read_message(self, channel):
+        message = super().read_message(channel)
+        self.parser.parse(message)
+        return b""
+
+    def handle_request(self, request, request_id):
+        pass
+
+
+class Listener(SessionListener):
+    def __init__(self, handle_request):
+        self.handle_request = handle_request
+
+    def callback(self, root, raw):
+        request = {"command": replace_message_id(raw, "")}
+        request_id = get_message_id(raw)
+        self.handle_request(request, request_id)
