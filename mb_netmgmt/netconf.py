@@ -21,7 +21,7 @@ from lxml import etree
 from ncclient.devices.default import DefaultDeviceHandler
 from ncclient.manager import connect
 from ncclient.transport.parser import DefaultXMLParser
-from ncclient.transport.session import SessionListener
+from ncclient.transport.session import HelloHandler, SessionListener, qualify
 from ncclient.transport.ssh import (
     END_DELIM,
     MSG_DELIM,
@@ -56,7 +56,9 @@ class Handler(SshHandler):
         )
 
     def handle_prompt(self):
-        pass
+        hello = HelloHandler.build([], None)
+        self.channel.sendall(hello + MSG_DELIM.decode())
+        self.read_message(self.channel)
 
     def read_proxy_response(self):
         return {
@@ -82,6 +84,9 @@ class Listener(SessionListener):
         self.handle_request = handle_request
 
     def callback(self, root, raw):
+        tag, attrs = root
+        if (tag == qualify("hello")) or (tag == "hello"):
+            return
         request = {"command": replace_message_id(raw, "") + MSG_DELIM.decode()}
         request_id = get_message_id(raw)
         self.handle_request(request, request_id)
