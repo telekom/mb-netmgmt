@@ -17,11 +17,17 @@
 # You should have received a copy of the GNU General Public License
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
-from lxml import etree
 from ncclient.devices.default import DefaultDeviceHandler
 from ncclient.manager import connect
 from ncclient.transport.parser import DefaultXMLParser
-from ncclient.transport.session import HelloHandler, SessionListener, qualify
+from ncclient.transport.session import (
+    HelloHandler,
+    SessionListener,
+    qualify,
+    sub_ele,
+    to_ele,
+    to_xml,
+)
 from ncclient.transport.ssh import (
     END_DELIM,
     MSG_DELIM,
@@ -56,8 +62,15 @@ class Handler(SshHandler):
         )
 
     def handle_prompt(self):
-        hello = HelloHandler.build([], None)
-        self.channel.sendall(hello + MSG_DELIM.decode())
+        hello = to_ele(HelloHandler.build([], None))
+
+        # A server sending the <hello> element MUST include a <session-id>
+        # element containing the session ID for this NETCONF session.
+        # https://datatracker.ietf.org/doc/html/rfc6241#section-8.1
+        session_id = sub_ele(hello, "session-id")
+        session_id.text = "1"
+
+        self.channel.sendall(to_xml(hello) + MSG_DELIM.decode())
         self.read_message(self.channel)
 
     def read_proxy_response(self):
@@ -67,7 +80,7 @@ class Handler(SshHandler):
 
     def send_upstream(self, request, request_id):
         self.rpc_reply = self.manager.rpc(
-            etree.XML(request["command"][: -len(MSG_DELIM)])[0]
+            to_ele(request["command"][: -len(MSG_DELIM)])[0]
         )
 
     def read_message(self, channel):

@@ -80,6 +80,7 @@ def test_create_netconf_server():
     with ncclient.manager.connect(
         host="localhost", port=port, password="", hostkey_verify=False
     ) as m:
+        assert m.session_id == "1"
         m.get_config("running")
     ssh.stopped = True
     server.shutdown()
