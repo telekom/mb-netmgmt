@@ -26,13 +26,20 @@ from ncclient.manager import connect
 from ncclient.transport.parser import DefaultXMLParser
 from ncclient.transport.session import (
     HelloHandler,
+    NetconfBase,
     SessionListener,
     qualify,
     sub_ele,
     to_ele,
     to_xml,
 )
-from ncclient.transport.ssh import BUF_SIZE, MSG_DELIM, PORT_NETCONF_DEFAULT, SSHSession
+from ncclient.transport.ssh import (
+    BUF_SIZE,
+    END_DELIM,
+    MSG_DELIM,
+    PORT_NETCONF_DEFAULT,
+    SSHSession,
+)
 
 from mb_netmgmt.__main__ import Protocol
 from mb_netmgmt.ssh import accept
@@ -46,6 +53,7 @@ class Handler(BaseRequestHandler, Protocol):
         session = SSHSession(DefaultDeviceHandler())
         session.add_listener(Listener(super().handle_request))
         self.parser = DefaultXMLParser(session)
+        self.session = session
         super().__init__(request, client_address, server)
 
     def handle(self):
@@ -69,7 +77,9 @@ class Handler(BaseRequestHandler, Protocol):
         )
 
     def handle_prompt(self):
-        hello = to_ele(HelloHandler.build(["urn:ietf:params:netconf:base:1.0"], None))
+        hello = to_ele(
+            HelloHandler.build(DefaultDeviceHandler._BASE_CAPABILITIES, None)
+        )
 
         # A server sending the <hello> element MUST include a <session-id>
         # element containing the session ID for this NETCONF session.
@@ -79,16 +89,13 @@ class Handler(BaseRequestHandler, Protocol):
 
         self.channel.sendall(to_xml(hello) + MSG_DELIM.decode())
         self.read_message()
+        self.session._base = NetconfBase.BASE_11
 
     def read_proxy_response(self):
-        return {
-            "response": replace_message_id(self.rpc_reply.xml, "") + MSG_DELIM.decode()
-        }
+        return {"response": replace_message_id(self.rpc_reply.xml, "")}
 
     def send_upstream(self, request, request_id):
-        self.rpc_reply = self.manager.rpc(
-            to_ele(request["command"][: -len(MSG_DELIM)])[0]
-        )
+        self.rpc_reply = self.manager.rpc(to_ele(request["command"])[0])
 
     def read_message(self):
         message = self.channel.recv(BUF_SIZE)
@@ -96,8 +103,13 @@ class Handler(BaseRequestHandler, Protocol):
         return b""
 
     def respond(self, response, request_id):
-        response = replace_message_id(response["response"], request_id)
-        self.channel.sendall(response)
+        data = replace_message_id(response["response"], request_id).encode()
+
+        def start_delim(data_len):
+            return b"\n#%i\n" % (data_len)
+
+        data = b"%s%s%s" % (start_delim(len(data)), data, END_DELIM)
+        self.channel.sendall(data)
 
 
 class Listener(SessionListener):
@@ -108,7 +120,7 @@ class Listener(SessionListener):
         tag, attrs = root
         if (tag == qualify("hello")) or (tag == "hello"):
             return
-        request = {"command": replace_message_id(raw, "") + MSG_DELIM.decode()}
+        request = {"command": replace_message_id(raw, "")}
         request_id = get_message_id(raw)
         self.handle_request(request, request_id)
 

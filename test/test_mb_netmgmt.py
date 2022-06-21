@@ -96,7 +96,7 @@ def mock_post_request(handler, request):
         return {"response": {"response": "<hello/>]]>]]>"}}
     return {
         "response": {
-            "response": '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>]]>]]>'
+            "response": '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>'
         }
     }
 
@@ -111,8 +111,8 @@ def test_netconf_upstream():
     handler = Handler(None, None, None)
     expected_proxy_response = (
         '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>'
-        + MSG_DELIM.decode()
     )
+
     with mb(
         imposter(
             "netconf",
@@ -121,19 +121,14 @@ def test_netconf_upstream():
                     "predicates": [
                         {
                             "endsWith": {
-                                "command": "<nc:get-config>running</nc:get-config></nc:rpc>]]>]]>"
+                                "command": "<nc:get-config>running</nc:get-config></nc:rpc>"
                             }
                         }
                     ],
                     "responses": [
                         {"is": {"response": expected_proxy_response}},
                     ],
-                },
-                {
-                    "responses": [
-                        {"is": {"response": "<hello/>" + MSG_DELIM.decode()}},
-                    ]
-                },
+                }
             ],
         ),
         "debug",
@@ -142,7 +137,6 @@ def test_netconf_upstream():
         handler.send_upstream(
             {
                 "command": '<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="42"><get-config>running</get-config></rpc>'
-                + MSG_DELIM.decode()
             },
             42,
         )
