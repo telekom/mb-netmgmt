@@ -81,6 +81,7 @@ def test_create_netconf_server():
         host="localhost", port=port, password="", hostkey_verify=False
     ) as m:
         assert m.session_id == "1"
+        assert "urn:ietf:params:netconf:base:1.0" in m.server_capabilities
         m.get_config("running")
     netconf.stopped = True
     server.shutdown()

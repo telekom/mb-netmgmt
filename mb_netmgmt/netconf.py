@@ -69,7 +69,7 @@ class Handler(BaseRequestHandler, Protocol):
         )
 
     def handle_prompt(self):
-        hello = to_ele(HelloHandler.build([], None))
+        hello = to_ele(HelloHandler.build(["urn:ietf:params:netconf:base:1.0"], None))
 
         # A server sending the <hello> element MUST include a <session-id>
         # element containing the session ID for this NETCONF session.
