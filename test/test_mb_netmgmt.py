@@ -82,9 +82,9 @@ def test_create_netconf_server():
     ) as m:
         assert m.session_id == "1"
         m.get_config("running")
-    ssh.stopped = True
+    netconf.stopped = True
     server.shutdown()
-    ssh.stopped = False
+    netconf.stopped = False
     netconf.Handler.open_upstream = original_open_upstream
     netconf.Handler.post_request = original_post_request
 

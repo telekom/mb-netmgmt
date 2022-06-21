@@ -17,16 +17,14 @@
 # You should have received a copy of the GNU General Public License
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
-import re
-from socketserver import BaseRequestHandler, TCPServer
+from socketserver import BaseRequestHandler
+from socketserver import TCPServer as Server
 
 import paramiko
 
 from mb_netmgmt.__main__ import Protocol
 
-Server = TCPServer
 stopped = False
-message_id_regex = ' message-id="([^"]*)"'
 
 
 class ParamikoServer(paramiko.ServerInterface):
@@ -58,12 +56,7 @@ class Handler(BaseRequestHandler, Protocol):
 
     def handle(self):
         self.callback_url = self.server.callback_url
-        t = paramiko.Transport(self.request)
-        t.add_server_key(paramiko.DSSKey.generate())
-        t.add_server_key(paramiko.ECDSAKey.generate())
-        t.add_server_key(paramiko.RSAKey.generate(4096))
-        t.start_server(server=ParamikoServer())
-        self.channel = t.accept()
+        self.channel = accept(self.request)
         self.open_upstream()
         self.handle_prompt()
         while not stopped:
@@ -71,19 +64,14 @@ class Handler(BaseRequestHandler, Protocol):
             self.handle_request(request, request_id)
 
     def send_upstream(self, request, request_id):
-        self.upstream_channel.sendall(
-            replace_message_id(request["command"], request_id)
-        )
+        self.upstream_channel.sendall(request["command"])
 
     def read_request(self):
         request = self.read_message(self.channel)
-        return (
-            {"command": replace_message_id(request.decode(), "")},
-            get_message_id(request.decode()),
-        )
+        return {"command": request.decode()}, None
 
     def respond(self, response, request_id):
-        response = replace_message_id(response["response"], request_id)
+        response = response["response"]
         self.channel.sendall(response)
 
     def open_upstream(self):
@@ -115,12 +103,10 @@ class Handler(BaseRequestHandler, Protocol):
         return message
 
 
-def get_message_id(rpc):
-    try:
-        return re.findall(message_id_regex, rpc)[0]
-    except IndexError:
-        return None
-
-
-def replace_message_id(rpc, message_id):
-    return re.sub(message_id_regex, f' message-id="{message_id}"', rpc)
+def accept(request):
+    t = paramiko.Transport(request)
+    t.add_server_key(paramiko.DSSKey.generate())
+    t.add_server_key(paramiko.ECDSAKey.generate())
+    t.add_server_key(paramiko.RSAKey.generate(4096))
+    t.start_server(server=ParamikoServer())
+    return t.accept()
