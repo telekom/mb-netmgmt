@@ -88,8 +88,13 @@ class Handler(BaseRequestHandler, Protocol):
         session_id.text = "1"
 
         self.channel.sendall(to_xml(hello) + MSG_DELIM.decode())
+
+        def init_cb(id, capabilities):
+            if "urn:ietf:params:netconf:base:1.1" in capabilities:
+                self.session._base = NetconfBase.BASE_11
+
+        self.session.add_listener(HelloHandler(init_cb, None))
         self.read_message()
-        self.session._base = NetconfBase.BASE_11
 
     def read_proxy_response(self):
         return {"response": replace_message_id(self.rpc_reply.xml, "")}
