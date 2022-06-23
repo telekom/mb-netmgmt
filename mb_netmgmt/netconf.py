@@ -61,8 +61,8 @@ class Handler(BaseRequestHandler, Protocol):
         self.channel = accept(self.request)
         self.open_upstream()
         self.handle_prompt()
-        while not stopped:
-            self.read_message()
+        self.session._channel = self.channel
+        self.session.run()
 
     def open_upstream(self):
         to = self.get_to()
