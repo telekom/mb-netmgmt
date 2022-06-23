@@ -49,12 +49,11 @@ message_id_regex = ' message-id="([^"]*)"'
 
 
 class Handler(BaseRequestHandler, Protocol):
-    def __init__(self, request, client_address, server):
+    def setup(self):
         session = SSHSession(DefaultDeviceHandler())
         session.add_listener(Listener(super().handle_request))
         self.parser = DefaultXMLParser(session)
         self.session = session
-        super().__init__(request, client_address, server)
 
     def handle(self):
         self.callback_url = self.server.callback_url
@@ -94,18 +93,12 @@ class Handler(BaseRequestHandler, Protocol):
                 self.session._base = NetconfBase.BASE_11
 
         self.session.add_listener(HelloHandler(init_cb, None))
-        self.read_message()
 
     def read_proxy_response(self):
         return {"response": replace_message_id(self.rpc_reply.xml, "")}
 
     def send_upstream(self, request, request_id):
         self.rpc_reply = self.manager.rpc(to_ele(request["command"])[0])
-
-    def read_message(self):
-        message = self.channel.recv(BUF_SIZE)
-        self.parser.parse(message)
-        return b""
 
     def respond(self, response, request_id):
         data = replace_message_id(response["response"], request_id).encode()
