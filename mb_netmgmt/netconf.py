@@ -68,6 +68,7 @@ class Handler(BaseRequestHandler, Protocol):
             username=to.username,
             password=to.password,
             hostkey_verify=False,
+            timeout=60,
         )
 
     def handle_prompt(self):
