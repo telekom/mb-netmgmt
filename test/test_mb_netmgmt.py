@@ -110,7 +110,7 @@ def test_netconf_upstream():
     Handler.get_to = lambda handler: urlparse(f"netconf://localhost:{port}")
     handler = Handler(None, None, None)
     expected_proxy_response = (
-        '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>'
+        '<?xml version="1.0" encoding="UTF-8"?><rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>'
     )
 
     with mb(

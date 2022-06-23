@@ -17,7 +17,6 @@
 # You should have received a copy of the GNU General Public License
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
-import re
 from socketserver import BaseRequestHandler
 from socketserver import TCPServer as Server
 
@@ -39,7 +38,6 @@ from mb_netmgmt.__main__ import Protocol
 from mb_netmgmt.ssh import accept
 
 stopped = False
-message_id_regex = ' message-id="([^"]*)"'
 
 
 class Handler(BaseRequestHandler, Protocol):
@@ -110,16 +108,10 @@ class Listener(SessionListener):
         if (tag == qualify("hello")) or (tag == "hello"):
             return
         request = {"command": replace_message_id(raw, "")}
-        request_id = get_message_id(raw)
-        self.handle_request(request, request_id)
-
-
-def get_message_id(rpc):
-    try:
-        return re.findall(message_id_regex, rpc)[0]
-    except IndexError:
-        return None
+        self.handle_request(request, attrs["message-id"])
 
 
 def replace_message_id(rpc, message_id):
-    return re.sub(message_id_regex, f' message-id="{message_id}"', rpc)
+    ele = to_ele(rpc)
+    ele.attrib["message-id"] = message_id
+    return to_xml(ele)
