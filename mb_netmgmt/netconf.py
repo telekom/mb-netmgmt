@@ -33,13 +33,7 @@ from ncclient.transport.session import (
     to_ele,
     to_xml,
 )
-from ncclient.transport.ssh import (
-    BUF_SIZE,
-    END_DELIM,
-    MSG_DELIM,
-    PORT_NETCONF_DEFAULT,
-    SSHSession,
-)
+from ncclient.transport.ssh import MSG_DELIM, PORT_NETCONF_DEFAULT, SSHSession
 
 from mb_netmgmt.__main__ import Protocol
 from mb_netmgmt.ssh import accept
@@ -59,6 +53,7 @@ class Handler(BaseRequestHandler, Protocol):
         self.callback_url = self.server.callback_url
         self.channel = accept(self.request)
         self.open_upstream()
+        self.session._connected = True
         self.handle_prompt()
         self.session._channel = self.channel
         self.session.run()
@@ -101,13 +96,8 @@ class Handler(BaseRequestHandler, Protocol):
         self.rpc_reply = self.manager.rpc(to_ele(request["command"])[0])
 
     def respond(self, response, request_id):
-        data = replace_message_id(response["response"], request_id).encode()
-
-        def start_delim(data_len):
-            return b"\n#%i\n" % (data_len)
-
-        data = b"%s%s%s" % (start_delim(len(data)), data, END_DELIM)
-        self.channel.sendall(data)
+        message = replace_message_id(response["response"], request_id)
+        self.session.send(message)
 
 
 class Listener(SessionListener):
