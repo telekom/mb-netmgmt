@@ -68,7 +68,7 @@ def dump_imposters(host, name):
         return dumper.represent_scalar("tag:yaml.org,2002:str", data, style=style)
 
     yaml.representer.SafeRepresenter.add_representer(str, str_presenter)
-    yaml.safe_dump(response.json(), open(f"{name}.yaml", "w"))
+    yaml.safe_dump(response.json(), open(f"{name}.yaml", "w"), width=None)
 
 
 def load_imposters(host, name):
