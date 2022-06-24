@@ -20,6 +20,7 @@
 from socketserver import BaseRequestHandler
 from socketserver import TCPServer as Server
 
+from lxml import etree
 from ncclient.devices.default import DefaultDeviceHandler
 from ncclient.manager import connect
 from ncclient.transport.parser import DefaultXMLParser
@@ -92,7 +93,7 @@ class Handler(BaseRequestHandler, Protocol):
         return {"response": replace_message_id(self.rpc_reply.xml, "")}
 
     def send_upstream(self, request, request_id):
-        self.rpc_reply = self.manager.rpc(to_ele(request["command"])[0])
+        self.rpc_reply = self.manager.rpc(to_ele(request["rpc"]))
 
     def respond(self, response, request_id):
         message = replace_message_id(response["response"], request_id)
@@ -107,7 +108,8 @@ class Listener(SessionListener):
         tag, attrs = root
         if (tag == qualify("hello")) or (tag == "hello"):
             return
-        request = {"command": replace_message_id(raw, "")}
+        ele = etree.fromstring(raw.encode())
+        request = {"rpc": etree.tostring(ele[0], pretty_print=True).decode().strip()}
         self.handle_request(request, attrs["message-id"])
 
 

@@ -91,9 +91,6 @@ def test_create_netconf_server():
 
 
 def mock_post_request(handler, request):
-    command = request["command"]
-    if "<nc:hello" in command:
-        return {"response": {"response": "<hello/>]]>]]>"}}
     return {
         "response": {
             "response": '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>'
@@ -109,9 +106,7 @@ def test_netconf_upstream():
     Handler.handle = lambda handler: None
     Handler.get_to = lambda handler: urlparse(f"netconf://localhost:{port}")
     handler = Handler(None, None, None)
-    expected_proxy_response = (
-        '<?xml version="1.0" encoding="UTF-8"?><rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>'
-    )
+    expected_proxy_response = '<?xml version="1.0" encoding="UTF-8"?><rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>'
 
     with mb(
         imposter(
@@ -121,7 +116,7 @@ def test_netconf_upstream():
                     "predicates": [
                         {
                             "endsWith": {
-                                "command": "<nc:get-config>running</nc:get-config></nc:rpc>"
+                                "rpc": ">running</get-config>"
                             }
                         }
                     ],
@@ -135,9 +130,7 @@ def test_netconf_upstream():
     ):
         handler.open_upstream()
         handler.send_upstream(
-            {
-                "command": '<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="42"><get-config>running</get-config></rpc>'
-            },
+            {"rpc": "<get-config>running</get-config>"},
             42,
         )
         proxy_response = handler.read_proxy_response()
