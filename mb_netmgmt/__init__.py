@@ -62,6 +62,12 @@ def dump_imposters(host, name):
         f"http://{host}:2525/imposters",
         {"replayable": True, "removeProxies": True},
     )
+
+    def str_presenter(dumper, data):
+        style = "|" if len(data.splitlines()) > 1 else None
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style=style)
+
+    yaml.representer.SafeRepresenter.add_representer(str, str_presenter)
     yaml.safe_dump(response.json(), open(f"{name}.yaml", "w"))
 
 
