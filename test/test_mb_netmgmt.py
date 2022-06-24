@@ -8,6 +8,7 @@ import pytest
 from mb_netmgmt import mb, netconf, ssh
 from mb_netmgmt.__main__ import create_server
 from ncclient.transport.ssh import MSG_DELIM
+from ncclient.transport.session import to_ele
 
 port = 8080
 prompt = b"prompt"
@@ -124,7 +125,7 @@ def test_netconf_upstream():
         proxy_response = handler.read_proxy_response()
         assert (
             proxy_response["rpc-reply"]
-            == '<blubb xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"/>'
+            == '<blubb xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>'
         )
 
 
@@ -137,3 +138,13 @@ def create_proxy_response(message_id):
         "response": f'<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="{message_id}"/>'
         + MSG_DELIM.decode()
     }
+
+
+def test_unwrap_proxy_response_xml():
+    result = netconf.unwrap_proxy_response(to_ele("<rpc-reply><blubb/></rpc-reply>"))
+    assert result == "<blubb/>"
+
+
+def test_unwrap_proxy_response_text():
+    result = netconf.unwrap_proxy_response(to_ele("<rpc-reply>blubb</rpc-reply>"))
+    assert result == "blubb"

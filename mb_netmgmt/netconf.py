@@ -30,8 +30,7 @@ from ncclient.transport.session import (
     SessionListener,
     qualify,
     sub_ele,
-    to_ele,
-    new_ele,
+    to_ele
 )
 from ncclient.transport.ssh import MSG_DELIM, PORT_NETCONF_DEFAULT, SSHSession
 
@@ -90,14 +89,13 @@ class Handler(BaseRequestHandler, Protocol):
         self.session.add_listener(HelloHandler(init_cb, None))
 
     def read_proxy_response(self):
-        rpc_reply = self.rpc_reply._root[0]
-        return {"rpc-reply": to_xml(rpc_reply)}
+        return {"rpc-reply": unwrap_proxy_response(self.rpc_reply._root)}
 
     def send_upstream(self, request, request_id):
         self.rpc_reply = self.manager.rpc(to_ele(request["rpc"]))
 
     def respond(self, response, request_id):
-        message = wrap_reply(to_ele(response["rpc-reply"]), request_id)
+        message = wrap_reply(response["rpc-reply"], request_id)
         self.session.send(message)
 
 
@@ -114,10 +112,15 @@ class Listener(SessionListener):
         self.handle_request(request, attrs["message-id"])
 
 
-def wrap_reply(subele, message_id):
-    ele = new_ele("rpc-reply", {"message-id": message_id})
-    ele.append(subele)
-    return to_xml(ele)
+def wrap_reply(rpc_reply, message_id):
+    return f'<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="{message_id}">{rpc_reply}</rpc-reply>'
+
+
+def unwrap_proxy_response(root):
+    rpc_reply = root.text
+    if not rpc_reply:
+        rpc_reply = to_xml(root[0])
+    return rpc_reply
 
 
 def to_xml(ele):
