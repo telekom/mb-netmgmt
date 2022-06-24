@@ -91,11 +91,7 @@ def test_create_netconf_server():
 
 
 def mock_post_request(handler, request):
-    return {
-        "response": {
-            "response": '<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>'
-        }
-    }
+    return {"response": {"rpc-reply": "<blubb/>"}}
 
 
 def test_netconf_upstream():
@@ -106,22 +102,14 @@ def test_netconf_upstream():
     Handler.handle = lambda handler: None
     Handler.get_to = lambda handler: urlparse(f"netconf://localhost:{port}")
     handler = Handler(None, None, None)
-    expected_proxy_response = '<?xml version="1.0" encoding="UTF-8"?><rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id=""/>'
-
     with mb(
         imposter(
             "netconf",
             [
                 {
-                    "predicates": [
-                        {
-                            "endsWith": {
-                                "rpc": ">running</get-config>"
-                            }
-                        }
-                    ],
+                    "predicates": [{"endsWith": {"rpc": ">running</get-config>"}}],
                     "responses": [
-                        {"is": {"response": expected_proxy_response}},
+                        {"is": {"rpc-reply": "<blubb/>"}},
                     ],
                 }
             ],
@@ -134,7 +122,10 @@ def test_netconf_upstream():
             42,
         )
         proxy_response = handler.read_proxy_response()
-        assert proxy_response["response"] == expected_proxy_response
+        assert (
+            proxy_response["rpc-reply"]
+            == '<blubb xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"/>'
+        )
 
 
 def imposter(protocol, stubs):

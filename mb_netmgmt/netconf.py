@@ -31,7 +31,7 @@ from ncclient.transport.session import (
     qualify,
     sub_ele,
     to_ele,
-    to_xml,
+    new_ele,
 )
 from ncclient.transport.ssh import MSG_DELIM, PORT_NETCONF_DEFAULT, SSHSession
 
@@ -90,13 +90,14 @@ class Handler(BaseRequestHandler, Protocol):
         self.session.add_listener(HelloHandler(init_cb, None))
 
     def read_proxy_response(self):
-        return {"response": replace_message_id(self.rpc_reply.xml, "")}
+        rpc_reply = self.rpc_reply._root[0]
+        return {"rpc-reply": to_xml(rpc_reply)}
 
     def send_upstream(self, request, request_id):
         self.rpc_reply = self.manager.rpc(to_ele(request["rpc"]))
 
     def respond(self, response, request_id):
-        message = replace_message_id(response["response"], request_id)
+        message = wrap_reply(to_ele(response["rpc-reply"]), request_id)
         self.session.send(message)
 
 
@@ -109,11 +110,15 @@ class Listener(SessionListener):
         if (tag == qualify("hello")) or (tag == "hello"):
             return
         ele = etree.fromstring(raw.encode())
-        request = {"rpc": etree.tostring(ele[0], pretty_print=True).decode().strip()}
+        request = {"rpc": to_xml(ele[0])}
         self.handle_request(request, attrs["message-id"])
 
 
-def replace_message_id(rpc, message_id):
-    ele = to_ele(rpc)
-    ele.attrib["message-id"] = message_id
+def wrap_reply(subele, message_id):
+    ele = new_ele("rpc-reply", {"message-id": message_id})
+    ele.append(subele)
     return to_xml(ele)
+
+
+def to_xml(ele):
+    return etree.tostring(ele, pretty_print=True).decode().strip()
