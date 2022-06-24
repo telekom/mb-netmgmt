@@ -148,3 +148,7 @@ def test_unwrap_proxy_response_xml():
 def test_unwrap_proxy_response_text():
     result = netconf.unwrap_proxy_response(to_ele("<rpc-reply>blubb</rpc-reply>"))
     assert result == "blubb"
+
+def test_unwrap_proxy_response_xml_newline():
+    result = netconf.unwrap_proxy_response(to_ele("<rpc-reply>\n<blubb/></rpc-reply>"))
+    assert result == "<blubb/>"

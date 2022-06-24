@@ -117,10 +117,10 @@ def wrap_reply(rpc_reply, message_id):
 
 
 def unwrap_proxy_response(root):
-    rpc_reply = root.text
-    if not rpc_reply:
-        rpc_reply = to_xml(root[0])
-    return rpc_reply
+    try:
+        return to_xml(root[0])
+    except IndexError:
+        return root.text
 
 
 def to_xml(ele):
