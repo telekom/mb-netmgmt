@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.36"
+__version__ = "0.0.37"
 
 import os
 import subprocess

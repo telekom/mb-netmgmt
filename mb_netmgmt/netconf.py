@@ -113,7 +113,7 @@ class Listener(SessionListener):
 
 
 def wrap_reply(rpc_reply, message_id):
-    return f'<rpc-reply xmlns="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="{message_id}">{rpc_reply}</rpc-reply>'
+    return f'<nc:rpc-reply xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="{message_id}">{rpc_reply}</nc:rpc-reply>'
 
 
 def unwrap_proxy_response(root):

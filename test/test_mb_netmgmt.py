@@ -125,7 +125,7 @@ def test_netconf_upstream():
         proxy_response = handler.read_proxy_response()
         assert (
             proxy_response["rpc-reply"]
-            == '<blubb xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"/>'
+            == '<blubb xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"/>'
         )
 
 
