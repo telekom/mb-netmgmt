@@ -23,7 +23,7 @@ SNMP, Telnet, SSH and NETCONF implementation for [Mountebank](https://www.mbtest
 ### Docker
 
 ```sh
-$ docker run -p2525:2525 -p830:830 cbuehler/mb-netmgmt
+$ docker run -p2525:2525 -p23:23 -p830:830 cbuehler/mb-netmgmt
 info: [mb:2525] Loaded custom protocol snmp
 info: [mb:2525] Loaded custom protocol telnet
 info: [mb:2525] Loaded custom protocol netconf
@@ -48,40 +48,82 @@ info: [mb:2525] mountebank v2.6.0 now taking orders - point your browser to http
 ## Usage
 
 ```sh
-$ curl -XPOST localhost:2525/imposters -d '
+$ curl -XPUT localhost:2525/imposters -d '
 {
-  "port": 830,
-  "protocol": "netconf",
-  "stubs": [
+  "imposters": [
     {
-      "predicates": [
+      "port": 23,
+      "protocol": "telnet",
+      "stubs": [
         {
-          "deepEquals": {
-            "rpc": "<get-config>running</get-config>"
-          }
-        }
-      ],
-      "responses": [
+          "predicates": [
+            {
+              "deepEquals": {
+                "command": "show run\r\n"
+              }
+            }
+          ],
+          "responses": [
+            {
+              "is": {
+                "response": "end\r\n\r\n#"
+              }
+            }
+          ]
+        },
         {
-          "is": {
-            "rpc-reply": "<configuration/>"
-          }
+          "responses": [
+            {
+              "proxy": {
+                "predicatesGenerators": [
+                  {
+                    "matches": {
+                      "command": true
+                    }
+                  }
+                ],
+                "to": "telnet://example.org"
+              }
+            }
+          ]
         }
       ]
     },
     {
-      "responses": [
+      "port": 830,
+      "protocol": "netconf",
+      "stubs": [
         {
-          "proxy": {
-            "predicateGenerators": [
-              {
-                "matches": {
-                  "rpc": true
-                }
+          "predicates": [
+            {
+              "deepEquals": {
+                "rpc": "<get-config>running</get-config>"
               }
-            ],
-            "to": "netconf://username:password@example.org"
-          }
+            }
+          ],
+          "responses": [
+            {
+              "is": {
+                "rpc-reply": "<configuration/>"
+              }
+            }
+          ]
+        },
+        {
+          "responses": [
+            {
+              "proxy": {
+                "predicateGenerators": [
+                  {
+                    "matches": {
+                      "rpc": true
+                    }
+                  }
+                ],
+                "to": "netconf://username:password@example.org"
+              }
+            }
+          ]
         }
       ]
     }
