@@ -18,12 +18,12 @@
 
 SNMP, Telnet, SSH and NETCONF implementation for [Mountebank](https://www.mbtest.org/)
 
-## Usage
+## Installation
 
 ### Docker
 
 ```sh
-$ docker run cbuehler/mb-netmgmt
+$ docker run -p2525:2525 -p830:830 cbuehler/mb-netmgmt
 info: [mb:2525] Loaded custom protocol snmp
 info: [mb:2525] Loaded custom protocol telnet
 info: [mb:2525] Loaded custom protocol netconf
@@ -43,6 +43,51 @@ info: [mb:2525] Loaded custom protocol telnet
 info: [mb:2525] Loaded custom protocol netconf
 info: [mb:2525] Loaded custom protocol ssh
 info: [mb:2525] mountebank v2.6.0 now taking orders - point your browser to http://localhost:2525/ for help
+```
+
+## Usage
+
+```sh
+$ curl -XPOST localhost:2525/imposters -d '
+{
+  "port": 830,
+  "protocol": "netconf",
+  "stubs": [
+    {
+      "predicates": [
+        {
+          "deepEquals": {
+            "rpc": "<get-config>running</get-config>"
+          }
+        }
+      ],
+      "responses": [
+        {
+          "is": {
+            "rpc-reply": "<configuration/>"
+          }
+        }
+      ]
+    },
+    {
+      "responses": [
+        {
+          "proxy": {
+            "predicateGenerators": [
+              {
+                "matches": {
+                  "rpc": true
+                }
+              }
+            ],
+            "to": "netconf://username:password@example.org"
+          }
+        }
+      ]
+    }
+  ]
+}
+'
 ```
 
 For more details, have a look at the [Mountebank documentation](https://www.mbtest.org/)
