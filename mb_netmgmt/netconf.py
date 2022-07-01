@@ -112,6 +112,9 @@ class Listener(SessionListener):
         request = {"rpc": to_xml(ele[0])}
         self.handle_request(request, attrs["message-id"])
 
+    def errback(self, ex):
+        logging.error(ex)
+
 
 def wrap_reply(rpc_reply, message_id):
     return f'<nc:rpc-reply xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="{message_id}">{rpc_reply}</nc:rpc-reply>'
