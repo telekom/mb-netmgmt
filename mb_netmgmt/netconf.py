@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
+import logging
 from socketserver import BaseRequestHandler
 from socketserver import TCPServer as Server
 
@@ -30,7 +31,7 @@ from ncclient.transport.session import (
     SessionListener,
     qualify,
     sub_ele,
-    to_ele
+    to_ele,
 )
 from ncclient.transport.ssh import MSG_DELIM, PORT_NETCONF_DEFAULT, SSHSession
 
@@ -86,7 +87,7 @@ class Handler(BaseRequestHandler, Protocol):
             if "urn:ietf:params:netconf:base:1.1" in capabilities:
                 self.session._base = NetconfBase.BASE_11
 
-        self.session.add_listener(HelloHandler(init_cb, None))
+        self.session.add_listener(HelloHandler(init_cb, logging.error))
 
     def read_proxy_response(self):
         return {"rpc-reply": unwrap_proxy_response(self.rpc_reply._root)}
