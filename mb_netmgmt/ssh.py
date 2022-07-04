@@ -56,7 +56,8 @@ class Handler(BaseRequestHandler, Protocol):
 
     def handle(self):
         self.callback_url = self.server.callback_url
-        self.channel = accept(self.request)
+        transport = start_server(self.request)
+        self.channel = transport.accept()
         self.open_upstream()
         self.handle_prompt()
         while not stopped:
@@ -103,10 +104,10 @@ class Handler(BaseRequestHandler, Protocol):
         return message
 
 
-def accept(request):
+def start_server(request):
     t = paramiko.Transport(request)
     t.add_server_key(paramiko.DSSKey.generate())
     t.add_server_key(paramiko.ECDSAKey.generate())
     t.add_server_key(paramiko.RSAKey.generate(4096))
     t.start_server(server=ParamikoServer())
-    return t.accept()
+    return t

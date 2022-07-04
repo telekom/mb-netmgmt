@@ -36,7 +36,7 @@ from ncclient.transport.session import (
 from ncclient.transport.ssh import MSG_DELIM, PORT_NETCONF_DEFAULT, SSHSession
 
 from mb_netmgmt.__main__ import Protocol
-from mb_netmgmt.ssh import accept
+from mb_netmgmt.ssh import start_server
 
 stopped = False
 
@@ -50,10 +50,12 @@ class Handler(BaseRequestHandler, Protocol):
 
     def handle(self):
         self.callback_url = self.server.callback_url
-        self.channel = accept(self.request)
+        transport = start_server(self.request)
+        self.channel = transport.accept()
         self.open_upstream()
         self.session._connected = True
         self.handle_prompt()
+        self.session._transport = transport
         self.session._channel = self.channel
         self.session.run()
 
