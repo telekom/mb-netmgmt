@@ -129,7 +129,7 @@ def test_netconf_upstream():
         )
 
 
-def imposter(protocol, stubs):
+def imposter(protocol, stubs=None):
     return [{"protocol": protocol, "port": port, "stubs": stubs}]
 
 
@@ -149,6 +149,15 @@ def test_unwrap_proxy_response_text():
     result = netconf.unwrap_proxy_response(to_ele("<rpc-reply>blubb</rpc-reply>"))
     assert result == "blubb"
 
+
 def test_unwrap_proxy_response_xml_newline():
     result = netconf.unwrap_proxy_response(to_ele("<rpc-reply>\n<blubb/></rpc-reply>"))
     assert result == "<blubb/>"
+
+
+def test_netconf_default_response():
+    with mb(imposter("netconf")):
+        with ncclient.manager.connect(
+            host="localhost", port=port, password="", hostkey_verify=False
+        ) as m:
+            m.get_config("running")

@@ -26,6 +26,7 @@ from ncclient.devices.default import DefaultDeviceHandler
 from ncclient.manager import connect
 from ncclient.transport.parser import DefaultXMLParser
 from ncclient.transport.session import (
+    BASE_NS_1_0,
     HelloHandler,
     NetconfBase,
     SessionListener,
@@ -98,7 +99,8 @@ class Handler(BaseRequestHandler, Protocol):
         self.rpc_reply = self.manager.rpc(to_ele(request["rpc"]))
 
     def respond(self, response, request_id):
-        message = wrap_reply(response["rpc-reply"], request_id)
+        reply = response.get("rpc-reply")
+        message = wrap_reply(reply, request_id)
         self.session.send(message)
 
 
@@ -119,7 +121,7 @@ class Listener(SessionListener):
 
 
 def wrap_reply(rpc_reply, message_id):
-    return f'<nc:rpc-reply xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0" message-id="{message_id}">{rpc_reply}</nc:rpc-reply>'
+    return f'<nc:rpc-reply xmlns:nc="{BASE_NS_1_0}" message-id="{message_id}">{rpc_reply}</nc:rpc-reply>'
 
 
 def unwrap_proxy_response(root):
