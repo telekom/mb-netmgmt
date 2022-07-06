@@ -90,17 +90,17 @@ class Handler(BaseRequestHandler, Protocol):
             if "urn:ietf:params:netconf:base:1.1" in capabilities:
                 self.session._base = NetconfBase.BASE_11
 
-        self.session.add_listener(HelloHandler(init_cb, logging.error))
+        self.session.add_listener(HelloHandler(init_cb, lambda ex: None))
 
     def read_proxy_response(self):
-        return {"rpc-reply": unwrap_proxy_response(self.rpc_reply._root)}
+        return {"rpc-reply": remove_message_id(self.rpc_reply._root)}
 
     def send_upstream(self, request, request_id):
         self.rpc_reply = self.manager.rpc(to_ele(request["rpc"]))
 
     def respond(self, response, request_id):
-        reply = response.get("rpc-reply")
-        message = wrap_reply(reply, request_id)
+        reply = response.get("rpc-reply", f'<rpc-reply xmlns="{BASE_NS_1_0}"/>')
+        message = add_message_id(reply, request_id)
         self.session.send(message)
 
 
@@ -117,18 +117,18 @@ class Listener(SessionListener):
         self.handle_request(request, attrs["message-id"])
 
     def errback(self, ex):
-        logging.error(ex)
+        logging.exception(ex)
 
 
-def wrap_reply(rpc_reply, message_id):
-    return f'<nc:rpc-reply xmlns:nc="{BASE_NS_1_0}" message-id="{message_id}">{rpc_reply}</nc:rpc-reply>'
+def add_message_id(rpc_reply, message_id):
+    ele = etree.fromstring(rpc_reply)
+    ele.set("message-id", message_id)
+    return to_xml(ele)
 
 
-def unwrap_proxy_response(root):
-    try:
-        return to_xml(root[0])
-    except IndexError:
-        return root.text
+def remove_message_id(root):
+    del root.attrib["message-id"]
+    return to_xml(root)
 
 
 def to_xml(ele):

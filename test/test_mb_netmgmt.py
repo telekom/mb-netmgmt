@@ -7,11 +7,14 @@ import paramiko
 import pytest
 from mb_netmgmt import mb, netconf, ssh
 from mb_netmgmt.__main__ import create_server
+from ncclient.transport.session import BASE_NS_1_0, to_ele
 from ncclient.transport.ssh import MSG_DELIM
-from ncclient.transport.session import to_ele
 
 port = 8080
 prompt = b"prompt"
+mock_response = f"""<rpc-reply xmlns="{BASE_NS_1_0}">
+  <blubb/>
+</rpc-reply>"""
 
 
 @pytest.mark.parametrize("protocol", ["http", "snmp", "telnet", "netconf"])
@@ -92,7 +95,7 @@ def test_create_netconf_server():
 
 
 def mock_post_request(handler, request):
-    return {"response": {"rpc-reply": "<blubb/>"}}
+    return {"response": {"rpc-reply": mock_response}}
 
 
 def test_netconf_upstream():
@@ -110,7 +113,7 @@ def test_netconf_upstream():
                 {
                     "predicates": [{"endsWith": {"rpc": ">running</get-config>"}}],
                     "responses": [
-                        {"is": {"rpc-reply": "<blubb/>"}},
+                        {"is": {"rpc-reply": mock_response}},
                     ],
                 }
             ],
@@ -123,10 +126,7 @@ def test_netconf_upstream():
             42,
         )
         proxy_response = handler.read_proxy_response()
-        assert (
-            proxy_response["rpc-reply"]
-            == '<blubb xmlns:nc="urn:ietf:params:xml:ns:netconf:base:1.0"/>'
-        )
+        assert proxy_response["rpc-reply"] == mock_response
 
 
 def imposter(protocol, stubs=None):
@@ -140,19 +140,11 @@ def create_proxy_response(message_id):
     }
 
 
-def test_unwrap_proxy_response_xml():
-    result = netconf.unwrap_proxy_response(to_ele("<rpc-reply><blubb/></rpc-reply>"))
-    assert result == "<blubb/>"
-
-
-def test_unwrap_proxy_response_text():
-    result = netconf.unwrap_proxy_response(to_ele("<rpc-reply>blubb</rpc-reply>"))
-    assert result == "blubb"
-
-
-def test_unwrap_proxy_response_xml_newline():
-    result = netconf.unwrap_proxy_response(to_ele("<rpc-reply>\n<blubb/></rpc-reply>"))
-    assert result == "<blubb/>"
+def test_remove_message_id():
+    result = netconf.remove_message_id(
+        to_ele(f'<rpc-reply xmlns="{BASE_NS_1_0}" message-id="42"><blubb/></rpc-reply>')
+    )
+    assert result == mock_response
 
 
 def test_netconf_default_response():

@@ -104,7 +104,7 @@ $ curl -XPUT localhost:2525/imposters -d '
           "responses": [
             {
               "is": {
-                "rpc-reply": "<configuration/>"
+                "rpc-reply": "<rpc-reply xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\"><configuration/></rpc-reply>"
               }
             }
           ]
