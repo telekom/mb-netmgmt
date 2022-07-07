@@ -69,6 +69,7 @@ class Handler(BaseRequestHandler, Protocol):
             port=to.port or PORT_NETCONF_DEFAULT,
             username=to.username,
             password=to.password,
+            key_filename=self.keyfile.name,
             hostkey_verify=False,
             timeout=60,
         )

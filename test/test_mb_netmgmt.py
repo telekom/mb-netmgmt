@@ -106,6 +106,7 @@ def test_netconf_upstream():
     Handler.handle = lambda handler: None
     Handler.get_to = lambda handler: urlparse(f"netconf://localhost:{port}")
     handler = Handler(None, None, None)
+    handler.save_key({})
     with mb(
         imposter(
             "netconf",
@@ -153,3 +154,26 @@ def test_netconf_default_response():
             host="localhost", port=port, password="", hostkey_verify=False
         ) as m:
             m.get_config("running")
+
+
+def test_netconf_private_key():
+    with mb(
+        imposter(
+            "netconf",
+            [
+                {
+                    "responses": [
+                        {
+                            "proxy": {
+                                "to": f"netconf://{os.environ['NETCONF_USERNAME']}@{os.environ['NETCONF_HOSTNAME']}",
+                                "key": os.environ["NETCONF_KEY"],
+                            }
+                        },
+                    ]
+                },
+            ],
+        )
+    ):
+        ncclient.manager.connect(
+            host="localhost", port=port, password="", hostkey_verify=False
+        )

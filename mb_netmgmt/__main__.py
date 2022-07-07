@@ -21,11 +21,13 @@ import importlib
 import json
 import logging
 import sys
+import tempfile
 import traceback
 from socketserver import BaseServer
 from urllib.parse import urlparse
 
 import requests
+from tomlkit import key
 
 
 def create_server(protocol, port, callback_url):
@@ -99,8 +101,17 @@ class Protocol:
             if not proxy:
                 proxy = self.get_proxy(stubs[0])
             if proxy:
+                self.save_key(proxy)
                 return urlparse(proxy["to"])
         except IndexError:
+            pass
+
+    def save_key(self, proxy):
+        self.keyfile = tempfile.NamedTemporaryFile("w")
+        try:
+            self.keyfile.write(proxy["key"])
+            self.keyfile.flush()
+        except KeyError:
             pass
 
     def get_proxy(self, stub):
