@@ -27,7 +27,6 @@ from socketserver import BaseServer
 from urllib.parse import urlparse
 
 import requests
-from tomlkit import key
 
 
 def create_server(protocol, port, callback_url):
