@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.43"
+__version__ = "0.0.44"
 
 import os
 import subprocess
@@ -77,3 +77,42 @@ def load_imposters(host, name):
 
 def read_imposters(name):
     return yaml.safe_load(open(f"{name}.yaml").read())["imposters"]
+
+
+def proxy_imposters(to, snmp_port=161, telnet_port=23, netconf_port=830):
+    return [
+        proxy_imposter(snmp_port, "snmp", to, "oids"),
+        proxy_imposter(telnet_port, "telnet", to, "command"),
+        proxy_imposter(
+            netconf_port,
+            "netconf",
+            f"netconf://{os.environ['NETCONF_USERNAME']}:{os.environ['NETCONF_PASSWORD']}@{to}",
+            "rpc",
+        ),
+    ]
+
+
+def proxy_imposter(port, protocol, to, predicate_generator):
+    return {
+        "port": port,
+        "protocol": protocol,
+        "stubs": proxy_stubs(to, predicate_generator),
+    }
+
+
+def proxy_stubs(to, predicate_generator):
+    return [
+        {
+            "responses": [
+                {
+                    "proxy": {
+                        "mode": "proxyAlways",
+                        "predicateGenerators": [
+                            {"matches": {predicate_generator: True}}
+                        ],
+                        "to": to,
+                    }
+                }
+            ]
+        }
+    ]
