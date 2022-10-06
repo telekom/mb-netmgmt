@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.45"
+__version__ = "0.0.46"
 
 import os
 import subprocess
@@ -41,11 +41,11 @@ def mb(imposters, loglevel="info"):
             mb.terminate()
 
 
-def put_imposters(host, imposters):
+def put_imposters(host, imposters, port=2525):
     while True:
         try:
             response = requests.put(
-                f"http://{host}:2525/imposters",
+                f"http://{host}:{port}/imposters",
                 json={"imposters": imposters},
             )
             break
