@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.46"
+__version__ = "0.0.47"
 
 import os
 import subprocess
@@ -32,7 +32,8 @@ import yaml
 @contextmanager
 def mb(imposters, loglevel="info"):
     with subprocess.Popen(
-        ["mb", "--loglevel", loglevel], cwd=os.path.dirname(__file__)
+        ["mb", "--loglevel", loglevel, "--pidfile", "/tmp/mb.pid"],
+        cwd=os.path.dirname(__file__),
     ) as mb:
         try:
             put_imposters("localhost", imposters)
