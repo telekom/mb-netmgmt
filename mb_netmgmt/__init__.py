@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.48"
+__version__ = "0.0.49"
 
 import os
 import subprocess
@@ -63,17 +63,22 @@ def put_imposters(host, imposters, port=2525):
 
 
 def dump_imposters(host, name):
-    response = requests.get(
-        f"http://{host}:2525/imposters",
-        {"replayable": True, "removeProxies": True},
-    )
+    imposters = get_imposters(host)
 
     def str_presenter(dumper, data):
         style = "|" if len(data.splitlines()) > 1 else None
         return dumper.represent_scalar("tag:yaml.org,2002:str", data, style=style)
 
     yaml.representer.SafeRepresenter.add_representer(str, str_presenter)
-    yaml.safe_dump(response.json(), open(f"{name}.yaml", "w"), width=None)
+    yaml.safe_dump(imposters, open(f"{name}.yaml", "w"), width=None)
+
+
+def get_imposters(host):
+    response = requests.get(
+        f"http://{host}:2525/imposters",
+        {"replayable": True, "removeProxies": True},
+    )
+    return response.json()
 
 
 def load_imposters(host, name):
