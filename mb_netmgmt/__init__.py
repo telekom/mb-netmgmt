@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.49"
+__version__ = "0.0.50"
 
 import os
 import subprocess
@@ -26,7 +26,10 @@ import time
 from contextlib import contextmanager
 
 import requests
-import yaml
+from ruamel.yaml import YAML
+from ruamel.yaml.scalarstring import walk_tree
+
+yaml = YAML()
 
 
 @contextmanager
@@ -62,20 +65,15 @@ def put_imposters(host, imposters, port=2525):
         raise RuntimeError(e.response.json()["errors"])
 
 
-def dump_imposters(host, name):
-    imposters = get_imposters(host)
-
-    def str_presenter(dumper, data):
-        style = "|" if len(data.splitlines()) > 1 else None
-        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style=style)
-
-    yaml.representer.SafeRepresenter.add_representer(str, str_presenter)
-    yaml.safe_dump(imposters, open(f"{name}.yaml", "w"), width=None)
+def dump_imposters(host="localhost", name="imposters", port=2525):
+    imposters = get_imposters(host, port)
+    walk_tree(imposters)
+    yaml.dump(imposters, open(f"{name}.yaml", "w"))
 
 
-def get_imposters(host):
+def get_imposters(host="localhost", port=2525):
     response = requests.get(
-        f"http://{host}:2525/imposters",
+        f"http://{host}:{port}/imposters",
         {"replayable": True, "removeProxies": True},
     )
     return response.json()
@@ -86,7 +84,7 @@ def load_imposters(host, name):
 
 
 def read_imposters(name):
-    return yaml.safe_load(open(f"{name}.yaml").read())["imposters"]
+    return yaml.load(open(f"{name}.yaml"))["imposters"]
 
 
 def proxy_imposters(to, snmp_port=161, telnet_port=23, netconf_port=830):
