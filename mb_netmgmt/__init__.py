@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.51"
+__version__ = "0.0.52"
 
 import os
 import subprocess
@@ -61,6 +61,7 @@ def put_imposters(host, imposters, port=2525):
             time.sleep(1)
     try:
         response.raise_for_status()
+        return response.json()
     except requests.HTTPError as e:
         raise RuntimeError(e.response.json()["errors"])
 
