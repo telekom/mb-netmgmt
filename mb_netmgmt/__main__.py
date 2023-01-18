@@ -101,6 +101,7 @@ class Protocol:
                 proxy = self.get_proxy(stubs[0])
             if proxy:
                 self.save_key(proxy)
+                disable_algorithms(proxy.get("disabled_algorithms", {}))
                 return urlparse(proxy["to"])
         except IndexError:
             pass
@@ -115,6 +116,16 @@ class Protocol:
 
     def get_proxy(self, stub):
         return stub["responses"][0].get("proxy")
+
+
+def disable_algorithms(disabled_algorithms):
+    # https://github.com/ncclient/ncclient/issues/526#issuecomment-1096563028
+    class MonkeyPatchedTransport(paramiko.Transport):
+        def __init__(self, *args, **kwargs):
+            kwargs["disabled_algorithms"] = disabled_algorithms
+            super().__init__(*args, **kwargs)
+
+    paramiko.Transport = MonkeyPatchedTransport
 
 
 if __name__ == "__main__":
