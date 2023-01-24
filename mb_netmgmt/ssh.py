@@ -89,8 +89,7 @@ class Handler(BaseRequestHandler, Protocol):
             key_filename=self.keyfile.name,
             transport_factory=paramiko.Transport,
         )
-        transport: paramiko.Transport = client._transport
-        self.upstream_channel = transport.open_session()
+        self.upstream_channel = client.invoke_shell()
 
     def handle_prompt(self):
         self.handle_request({"command": ""}, "")
