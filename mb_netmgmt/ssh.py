@@ -82,7 +82,12 @@ class Handler(BaseRequestHandler, Protocol):
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
         client.connect(
-            to.hostname, to.port or self.default_port, to.username, to.password
+            to.hostname,
+            to.port or self.default_port,
+            to.username,
+            to.password,
+            key_filename=self.keyfile.name,
+            transport_factory=paramiko.Transport,
         )
         transport: paramiko.Transport = client._transport
         self.upstream_channel = transport.open_session()
