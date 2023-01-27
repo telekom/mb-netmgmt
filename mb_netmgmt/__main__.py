@@ -60,7 +60,7 @@ class Protocol:
         if "response" not in mb_response:
             self.send_upstream(request, request_id)
         response = self.get_response(mb_response)
-        self.respond(response, request_id)
+        return self.respond(response, request_id)
 
     def get_response(self, mb_response):
         try:

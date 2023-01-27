@@ -51,9 +51,6 @@ class ParamikoServer(paramiko.ServerInterface):
 
 
 class Handler(BaseRequestHandler, Protocol):
-    message_terminators = [b"\n"]
-    default_port = 22
-
     def handle(self):
         self.callback_url = self.server.callback_url
         transport = start_server(self.request)
@@ -68,12 +65,13 @@ class Handler(BaseRequestHandler, Protocol):
         self.upstream_channel.sendall(request["command"])
 
     def read_request(self):
-        request = self.read_message(self.channel)
+        request = self.read_message(self.channel, [b"\n", b"\r"])
         return {"command": request.decode()}, None
 
     def respond(self, response, request_id):
         response = response["response"]
         self.channel.sendall(response)
+        return response
 
     def open_upstream(self):
         to = self.get_to()
@@ -83,26 +81,30 @@ class Handler(BaseRequestHandler, Protocol):
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
         client.connect(
             to.hostname,
-            to.port or self.default_port,
+            to.port or paramiko.config.SSH_PORT,
             to.username,
             to.password,
             key_filename=self.keyfile.name,
             transport_factory=paramiko.Transport,
+            look_for_keys=False,
         )
         self.upstream_channel = client.invoke_shell()
 
     def handle_prompt(self):
-        self.handle_request({"command": ""}, "")
+        self.command_prompt = b"#"
+        response = self.handle_request({"command": ""}, "")
+        self.command_prompt = response.split("\n")[-1].encode()
 
     def read_proxy_response(self):
-        return {"response": self.read_message(self.upstream_channel).decode()}
+        message = self.read_message(self.upstream_channel, [self.command_prompt])
+        return {"response": message.decode()}
 
-    def read_message(self, channel):
+    def read_message(self, channel, terminators):
         message = b""
         end_of_message = False
         while not end_of_message and not stopped:
             message += channel.recv(1024)
-            for terminator in self.message_terminators:
+            for terminator in terminators:
                 if terminator in message:
                     end_of_message = True
         return message
