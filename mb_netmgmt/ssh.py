@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 from socketserver import BaseRequestHandler
-from socketserver import TCPServer as Server
+from socketserver import ThreadingTCPServer as Server
 
 import paramiko
 
