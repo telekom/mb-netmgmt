@@ -40,7 +40,20 @@ class ParamikoServer(paramiko.ServerInterface):
     def check_channel_request(*args):
         return paramiko.OPEN_SUCCEEDED
 
-    def check_channel_pty_request(*args):
+    def check_channel_pty_request(
+        self, channel, term, width, height, pixelwidth, pixelheight, modes
+    ):
+        transport = channel.transport
+        channel.upstream = open_upstream(
+            transport.to,
+            transport.key_filename,
+            term,
+            width,
+            height,
+            pixelwidth,
+            pixelheight,
+        )
+        channel.command_prompt = handle_prompt(transport.handle_request)
         return True
 
     def check_channel_shell_request(*args):
@@ -53,16 +66,14 @@ class ParamikoServer(paramiko.ServerInterface):
 class Handler(BaseRequestHandler, Protocol):
     def handle(self):
         self.callback_url = self.server.callback_url
-        transport = start_server(self.request)
+        transport = start_server(self.request, self.get_to(), self.keyfile.name)
         self.channel = transport.accept()
-        self.open_upstream()
-        self.handle_prompt()
         while not stopped:
             request, request_id = self.read_request()
             self.handle_request(request, request_id)
 
     def send_upstream(self, request, request_id):
-        self.upstream_channel.sendall(request["command"])
+        self.channel.upstream.sendall(request["command"])
 
     def read_request(self):
         request = self.read_message(self.channel, [b"\n", b"\r"])
@@ -73,30 +84,10 @@ class Handler(BaseRequestHandler, Protocol):
         self.channel.sendall(response)
         return response
 
-    def open_upstream(self):
-        to = self.get_to()
-        if not to:
-            return
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
-        client.connect(
-            to.hostname,
-            to.port or paramiko.config.SSH_PORT,
-            to.username,
-            to.password,
-            key_filename=self.keyfile.name,
-            transport_factory=paramiko.Transport,
-            look_for_keys=False,
-        )
-        self.upstream_channel = client.invoke_shell()
-
-    def handle_prompt(self):
-        self.command_prompt = b"#"
-        response = self.handle_request({"command": ""}, "")
-        self.command_prompt = response.split("\n")[-1].encode()
-
     def read_proxy_response(self):
-        message = self.read_message(self.upstream_channel, [self.command_prompt])
+        message = self.read_message(
+            self.channel.upstream, [self.channel.command_prompt]
+        )
         return {"response": message.decode()}
 
     def read_message(self, channel, terminators):
@@ -110,10 +101,37 @@ class Handler(BaseRequestHandler, Protocol):
         return message
 
 
-def start_server(request):
+def open_upstream(to, key_filename, term, width, height, pixelwidth, pixelheight):
+    if not to:
+        return
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
+    client.connect(
+        to.hostname,
+        to.port or paramiko.config.SSH_PORT,
+        to.username,
+        to.password,
+        key_filename=key_filename,
+        transport_factory=paramiko.Transport,
+        look_for_keys=False,
+    )
+    return client.invoke_shell(term, width, height, pixelwidth, pixelheight)
+
+
+def handle_prompt(handle_request):
+    command_prompt = b"#"
+    response = handle_request({"command": ""}, "")
+    command_prompt = response.split("\n")[-1].encode()
+    return command_prompt
+
+
+def start_server(request, to, key_filename):
     t = paramiko.Transport(request)
     t.add_server_key(paramiko.DSSKey.generate())
     t.add_server_key(paramiko.ECDSAKey.generate())
     t.add_server_key(paramiko.RSAKey.generate(4096))
+    t.to = to
+    t.key_filename = key_filename
+    t.handle_request = self.handle_request
     t.start_server(server=ParamikoServer())
     return t
