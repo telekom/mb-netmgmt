@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.60"
+__version__ = "0.0.61"
 
 import os
 import subprocess
@@ -43,9 +43,11 @@ def mb(imposters, loglevel="info"):
 
 
 def start_mb(loglevel="info"):
+    mb_netmgmt_dir = os.path.dirname(__file__)
     return subprocess.Popen(
         ["mb", "--loglevel", loglevel, "--pidfile", "/tmp/mb.pid"],
-        cwd=os.path.dirname(__file__),
+        cwd=mb_netmgmt_dir,
+        env=dict(os.environ, PYTHONPATH=mb_netmgmt_dir + "/.."),
     )
 
 

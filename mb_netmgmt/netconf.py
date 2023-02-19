@@ -51,7 +51,9 @@ class Handler(BaseRequestHandler, Protocol):
 
     def handle(self):
         self.callback_url = self.server.callback_url
-        transport = start_server(self.request)
+        transport = start_server(
+            self.request, self.get_to(), self.key_filename, self.handle_request
+        )
         self.channel = transport.accept()
         self.open_upstream()
         self.session._connected = True
@@ -69,7 +71,7 @@ class Handler(BaseRequestHandler, Protocol):
             port=to.port or PORT_NETCONF_DEFAULT,
             username=to.username,
             password=to.password,
-            key_filename=self.keyfile.name,
+            key_filename=self.key_filename,
             hostkey_verify=False,
             timeout=60,
         )

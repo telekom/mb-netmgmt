@@ -53,7 +53,7 @@ class ParamikoServer(paramiko.ServerInterface):
             pixelwidth,
             pixelheight,
         )
-        channel.command_prompt = handle_prompt(transport.handle_request)
+        channel.command_prompt = handle_prompt(self.handle_request)
         return True
 
     def check_channel_shell_request(*args):
@@ -66,7 +66,9 @@ class ParamikoServer(paramiko.ServerInterface):
 class Handler(BaseRequestHandler, Protocol):
     def handle(self):
         self.callback_url = self.server.callback_url
-        transport = start_server(self.request, self.get_to(), self.keyfile.name)
+        transport = start_server(
+            self.request, self.get_to(), self.key_filename, self.handle_request
+        )
         self.channel = transport.accept()
         while not stopped:
             request, request_id = self.read_request()
@@ -125,13 +127,14 @@ def handle_prompt(handle_request):
     return command_prompt
 
 
-def start_server(request, to, key_filename):
+def start_server(request, to, key_filename, handle_request):
     t = paramiko.Transport(request)
     t.add_server_key(paramiko.DSSKey.generate())
     t.add_server_key(paramiko.ECDSAKey.generate())
     t.add_server_key(paramiko.RSAKey.generate(4096))
     t.to = to
     t.key_filename = key_filename
-    t.handle_request = self.handle_request
-    t.start_server(server=ParamikoServer())
+    paramiko_server = ParamikoServer()
+    paramiko_server.handle_request = handle_request
+    t.start_server(server=paramiko_server)
     return t

@@ -10,7 +10,7 @@ from mb_netmgmt.__main__ import create_server
 from ncclient.transport.session import BASE_NS_1_0, to_ele
 from ncclient.transport.ssh import MSG_DELIM
 
-port = 8080
+port = 8081
 prompt = b"prompt"
 mock_response = f"""<rpc-reply xmlns="{BASE_NS_1_0}">
   <blubb/>
@@ -33,21 +33,25 @@ def test_ssh():
 
 def test_ssh_proxy():
     with mb(
-        imposter(
-            "ssh",
-            [
-                prompt_stub(),
-                {
-                    "responses": [
-                        {
-                            "proxy": {
-                                "to": f"ssh://{os.environ['NETCONF_USERNAME']}:{os.environ['NETCONF_PASSWORD']}@localhost"
-                            }
-                        },
-                    ]
-                },
-            ],
-        )
+        [
+            {"protocol": "ssh", "port": 2222, "stubs": [prompt_stub()]},
+            {
+                "protocol": "ssh",
+                "port": port,
+                "stubs": [
+                    prompt_stub(),
+                    {
+                        "responses": [
+                            {
+                                "proxy": {
+                                    "to": f"ssh://{os.environ['NETCONF_USERNAME']}:{os.environ['NETCONF_PASSWORD']}@localhost:2222"
+                                }
+                            },
+                        ]
+                    },
+                ],
+            },
+        ]
     ):
         client = connect_ssh()
         chan = client.invoke_shell()
@@ -56,7 +60,7 @@ def test_ssh_proxy():
 
 
 def prompt_stub():
-    return {"responses": [{"is": {"response": prompt}}]}
+    return {"responses": [{"is": {"response": prompt.decode()}}]}
 
 
 def test_create_ssh_server():
@@ -158,21 +162,25 @@ def test_netconf_default_response():
 
 def test_netconf_private_key():
     with mb(
-        imposter(
-            "netconf",
-            [
-                {
-                    "responses": [
-                        {
-                            "proxy": {
-                                "to": f"netconf://{os.environ['NETCONF_USERNAME']}@{os.environ['NETCONF_HOSTNAME']}",
-                                "key": os.environ["NETCONF_KEY"],
-                            }
-                        },
-                    ]
-                },
-            ],
-        )
+        [
+            {"protocol": "netconf", "port": 830, "stubs": []},
+            {
+                "protocol": "netconf",
+                "port": port,
+                "stubs": [
+                    {
+                        "responses": [
+                            {
+                                "proxy": {
+                                    "to": f"netconf://{os.environ['NETCONF_USERNAME']}@localhost",
+                                    "key": os.environ["NETCONF_KEY"],
+                                }
+                            },
+                        ]
+                    },
+                ],
+            },
+        ]
     ):
         ncclient.manager.connect(
             host="localhost", port=port, password="", hostkey_verify=False

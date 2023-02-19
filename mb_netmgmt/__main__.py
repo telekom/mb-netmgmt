@@ -92,6 +92,7 @@ class Protocol:
         return response.json()
 
     def get_to(self):
+        self.key_filename = None
         try:
             imposter_response = requests.get(
                 self.server.callback_url.replace("/_requests", "")
@@ -104,16 +105,17 @@ class Protocol:
                 self.save_key(proxy)
                 disable_algorithms(proxy.get("disabled_algorithms", {}))
                 return urlparse(proxy["to"])
-        except IndexError:
+        except (IndexError, AttributeError):
             pass
 
     def save_key(self, proxy):
-        self.keyfile = tempfile.NamedTemporaryFile("w")
+        keyfile = tempfile.NamedTemporaryFile("w")
         try:
-            self.keyfile.write(proxy["key"])
-            self.keyfile.flush()
+            keyfile.write(proxy["key"])
+            keyfile.flush()
+            self.key_filename = keyfile.name
         except KeyError:
-            pass
+            self.key_filename = None
 
     def get_proxy(self, stub):
         return stub["responses"][0].get("proxy")
