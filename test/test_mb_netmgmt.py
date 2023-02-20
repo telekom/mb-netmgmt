@@ -11,7 +11,7 @@ from ncclient.transport.session import BASE_NS_1_0, to_ele
 from ncclient.transport.ssh import MSG_DELIM
 
 port = 8081
-prompt = b"prompt"
+prompt = b"prompt#"
 mock_response = f"""<rpc-reply xmlns="{BASE_NS_1_0}">
   <blubb/>
 </rpc-reply>"""
@@ -39,7 +39,6 @@ def test_ssh_proxy():
                 "protocol": "ssh",
                 "port": port,
                 "stubs": [
-                    prompt_stub(),
                     {
                         "responses": [
                             {

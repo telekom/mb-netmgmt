@@ -53,6 +53,7 @@ class ParamikoServer(paramiko.ServerInterface):
             pixelwidth,
             pixelheight,
         )
+        channel.command_prompt = b"#"
         channel.command_prompt = handle_prompt(self.handle_request)
         return True
 
@@ -121,7 +122,6 @@ def open_upstream(to, key_filename, term, width, height, pixelwidth, pixelheight
 
 
 def handle_prompt(handle_request):
-    command_prompt = b"#"
     response = handle_request({"command": ""}, "")
     command_prompt = response.split("\n")[-1].encode()
     return command_prompt
