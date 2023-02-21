@@ -1,3 +1,4 @@
+import io
 import os
 from threading import Thread
 from urllib.parse import urlparse
@@ -5,10 +6,11 @@ from urllib.parse import urlparse
 import ncclient.manager
 import paramiko
 import pytest
-from mb_netmgmt import mb, netconf, ssh
-from mb_netmgmt.__main__ import create_server
 from ncclient.transport.session import BASE_NS_1_0, to_ele
 from ncclient.transport.ssh import MSG_DELIM
+
+from mb_netmgmt import mb, netconf, ssh, use_literal_scalar_strings, yaml
+from mb_netmgmt.__main__ import create_server
 
 port = 8081
 prompt = b"prompt#"
@@ -184,3 +186,13 @@ def test_netconf_private_key():
         ncclient.manager.connect(
             host="localhost", port=port, password="", hostkey_verify=False
         )
+
+
+def test_use_literal_scalar_strings():
+    base = {"x": "y\r\nz"}
+    use_literal_scalar_strings(base)
+
+    s = io.StringIO()
+    yaml.dump(base, s)
+    s.seek(0)
+    assert s.read() == "x: |-\n  y\r\n  z\n"
