@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.63"
+__version__ = "0.0.64"
 
 import os
 import subprocess
@@ -27,7 +27,11 @@ from contextlib import contextmanager
 
 import requests
 from ruamel.yaml import YAML
-from ruamel.yaml.scalarstring import LiteralScalarString, walk_tree
+from ruamel.yaml.scalarstring import (
+    DoubleQuotedScalarString,
+    LiteralScalarString,
+    walk_tree,
+)
 
 yaml = YAML()
 
@@ -70,12 +74,18 @@ def put_imposters(host, imposters, port=2525):
 
 def dump_imposters(host="localhost", name="imposters", port=2525):
     imposters = get_imposters(host, port)
-    use_literal_scalar_strings(imposters)
+    use_scalar_strings(imposters)
     yaml.dump(imposters, open(f"{name}.yaml", "w"))
 
 
-def use_literal_scalar_strings(base):
-    walk_tree(base, {"\n": LiteralScalarString})
+def use_scalar_strings(base):
+    walk_tree(
+        base,
+        {
+            "\r": DoubleQuotedScalarString,
+            "\n": LiteralScalarString,
+        },
+    )
 
 
 def get_imposters(host="localhost", port=2525):
