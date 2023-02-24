@@ -1,5 +1,6 @@
-FROM bbyars/mountebank
-USER root
+FROM node:16-alpine
+RUN npm install -g mountebank
+ENTRYPOINT ["mb"]
 RUN apk add \
     py3-lxml \
     py3-paramiko \
