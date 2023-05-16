@@ -52,6 +52,28 @@ $ curl -XPUT localhost:2525/imposters -d '
 {
   "imposters": [
     {
+      "port": 22,
+      "protocol": "ssh",
+      "stubs": [
+        {
+          "responses": [
+            {
+              "proxy": {
+                "predicatesGenerators": [
+                  {
+                    "matches": {
+                      "command": true
+                    }
+                  }
+                ],
+                "to": "ssh://username:password@example.org"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "port": 23,
       "protocol": "telnet",
       "stubs": [
