@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
+import re
 from socketserver import BaseRequestHandler
 from socketserver import ThreadingTCPServer as Server
 
@@ -88,19 +89,23 @@ class Handler(BaseRequestHandler, Protocol):
         return response
 
     def read_proxy_response(self):
-        message = self.read_message(
-            self.channel.upstream, [self.channel.command_prompt]
-        )
+        patterns = []
+        patterns.append(b"[\r\n\x1b\[K][\-\w+\.:/]+(?:\([^\)]+\))?[>#] ?$")  # IOS
+        patterns.append(b"[\r\n\x00\x1b\[K]RP/\d+/(?:RS?P)?\d+\/CPU\d+:[^#]+(?:\([^\)]+\))?#$")  # IOS XR
+        patterns.append(b"[\r\n\x00\x1b\[K](?P<text>[\w/ .:,\(\)\-\?]*)(?P<default>\[[\w/.:\-]*\])?(?(default)(?P<end1>(?:\?|: ?|)$)|(?P<end2>: $))")  # Interactive prompt
+        patterns.append(b"[\r\n\x00\x1b\[K] --More-- $")  # Terminal paging
+        message = self.read_message(self.channel.upstream, patterns)
         return {"response": message.decode()}
 
-    def read_message(self, channel, terminators):
+    def read_message(self, channel, patterns):
         message = b""
         end_of_message = False
         while not end_of_message and not stopped:
             message += channel.recv(1024)
-            for terminator in terminators:
-                if terminator in message:
+            for pattern in patterns:
+                if re.findall(pattern, message):
                     end_of_message = True
+                    break
         return message
 
 

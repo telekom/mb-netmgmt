@@ -42,7 +42,8 @@ class Handler(StreamRequestHandler, Protocol):
             pass
         self.wfile.write(self.command_prompt)
         request = None
-        while request != b"exit\r\n":
+        self.stopped = False
+        while not self.stopped:
             request, request_id = self.read_request()
             if not request:
                 return
@@ -59,9 +60,17 @@ class Handler(StreamRequestHandler, Protocol):
 
     def respond(self, response, request_id):
         self.wfile.write(response["response"].encode())
+        if response["response"].encode() in [b"exit\r\n\r", b"quit\r\n\r"]:
+            self.stopped = True
 
     def read_proxy_response(self):
-        return {"response": self.telnet.read_until(self.command_prompt).decode()}
+        prompt_patterns = []
+        prompt_patterns.append(b"[\r\n][\-\w+\.:/]+(?:\([^\)]+\))?[>#] ?$")  # IOS
+        prompt_patterns.append(b"[\r\n\x00]RP/\d+/(?:RS?P)?\d+\/CPU\d+:[^#]+(?:\([^\)]+\))?#$")  # IOS XR
+        prompt_patterns.append(b"[\r\n\x00](?P<text>[\w/ .:,\(\)\-\?]*)(?P<default>\[[\w/.:\-]*\])?(?(default)(?P<end1>(?:\?|: ?|)$)|(?P<end2>: $))")  # Interactive prompt
+        prompt_patterns.append(b"[\r\n\x00] --More-- $")  # Terminal paging
+        _, _, response = self.telnet.expect(prompt_patterns)
+        return {"response": response.decode()}
 
     def handle_username_prompt(self):
         username_prompt = b"Username: "
