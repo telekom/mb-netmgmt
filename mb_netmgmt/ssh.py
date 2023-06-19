@@ -90,6 +90,7 @@ class Handler(BaseRequestHandler, Protocol):
 
     def read_proxy_response(self):
         patterns = []
+        patterns.append(self.channel.command_prompt)  # Initial command prompt
         patterns.append(b"[\r\n\x1b\[K][\-\w+\.:/]+(?:\([^\)]+\))?[>#] ?$")  # IOS
         patterns.append(b"[\r\n\x00\x1b\[K]RP/\d+/(?:RS?P)?\d+\/CPU\d+:[^#]+(?:\([^\)]+\))?#$")  # IOS XR
         patterns.append(b"[\r\n\x00\x1b\[K](?P<text>[\w/ .:,\(\)\-\?]*)(?P<default>\[[\w/.:\-]*\])?(?(default)(?P<end1>(?:\?|: ?|)$)|(?P<end2>: $))")  # Interactive prompt
