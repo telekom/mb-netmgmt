@@ -1,5 +1,6 @@
 import io
 import os
+import re
 from threading import Thread
 from urllib.parse import urlparse
 
@@ -10,13 +11,37 @@ from ncclient.transport.session import BASE_NS_1_0, to_ele
 from ncclient.transport.ssh import MSG_DELIM
 
 from mb_netmgmt import mb, netconf, ssh, use_scalar_strings, yaml
-from mb_netmgmt.__main__ import create_server
+from mb_netmgmt.__main__ import create_server, get_cli_patterns
 
 port = 8081
 prompt = b"prompt#"
 mock_response = f"""<rpc-reply xmlns="{BASE_NS_1_0}">
   <blubb/>
 </rpc-reply>"""
+cli_responses = [
+    (b"\rIOS-1>", True),
+    (b"\rIOS-1#", True),
+    (b"\rIOS-1(config)#", True),
+    (b"\rIOS-1(config-if)#", True),
+    (b"\rRP/0/8/CPU0:IOSXR-2>", True),
+    (b"\rRP/0/8/CPU0:IOSXR-2#", True),
+    (b"\rRP/0/8/CPU0:IOSXR-2(config)#", True),
+    (b"\rRP/0/8/CPU0:IOSXR-2(config-if)#", True),
+    (
+        b"\rKUncommitted changes found, commit them before exiting(yes/no/cancel)? [cancel]:",
+        True,
+    ),
+    (b"\rProtocol [ipv4]: ", True),
+    (b"\rTarget IP address: ", True),
+    (b"\rHost name or IP address (control-c to abort): []?", True),
+    (b"\rDestination file name (control-c to abort): [running-config]?", True),
+    (b"\rDelete net/node0_8_CPU0/disk0:/c12k-mini.vm-4.3.2[confirm]", True),
+    (b"\rDestination filename [/net/node0_8_CPU0/disk0:/c12k-mini.vm-4.3.2]?", True),
+    (b"\rReload hardware module ? [no,yes] ", True),
+    (b"\rDo you wish to continue?[confirm(y/n)]", True),
+    (b"\r --More-- ", True),
+    (b"\rSending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:", False),
+]
 
 
 @pytest.mark.parametrize("protocol", ["http", "snmp", "telnet", "netconf"])
@@ -202,3 +227,13 @@ def test_use_scalar_strings(base, result):
     yaml.dump(base, s)
     s.seek(0)
     assert s.read() == result
+
+
+@pytest.mark.parametrize("cli_response,result", cli_responses)
+def test_cli_patterns(cli_response, result):
+    matched = False
+    for pattern in get_cli_patterns():
+        if re.findall(pattern, cli_response):
+            matched = True
+            break
+    assert matched == result

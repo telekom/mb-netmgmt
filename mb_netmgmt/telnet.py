@@ -22,7 +22,7 @@ import telnetlib
 import time
 from socketserver import StreamRequestHandler, TCPServer
 
-from mb_netmgmt.__main__ import Protocol
+from mb_netmgmt.__main__ import Protocol, get_cli_patterns
 
 Server = TCPServer
 
@@ -65,7 +65,7 @@ class Handler(StreamRequestHandler, Protocol):
 
     def read_proxy_response(self):
         prompt_patterns = [self.command_prompt]
-        prompt_patterns += self.get_cli_patterns()
+        prompt_patterns += get_cli_patterns()
         _, _, response = self.telnet.expect(prompt_patterns)
         return {"response": response.decode()}
 

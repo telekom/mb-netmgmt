@@ -23,7 +23,7 @@ from socketserver import ThreadingTCPServer as Server
 
 import paramiko
 
-from mb_netmgmt.__main__ import Protocol
+from mb_netmgmt.__main__ import Protocol, get_cli_patterns
 
 stopped = False
 
@@ -90,7 +90,7 @@ class Handler(BaseRequestHandler, Protocol):
 
     def read_proxy_response(self):
         prompt_patterns = [self.channel.command_prompt]
-        prompt_patterns += self.get_cli_patterns()
+        prompt_patterns += get_cli_patterns()
         message = self.read_message(self.channel.upstream, prompt_patterns)
         return {"response": message.decode()}
 
