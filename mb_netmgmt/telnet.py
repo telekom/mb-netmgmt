@@ -64,12 +64,8 @@ class Handler(StreamRequestHandler, Protocol):
             self.stopped = True
 
     def read_proxy_response(self):
-        prompt_patterns = []
-        prompt_patterns.append(self.command_prompt)  # Initial command prompt
-        prompt_patterns.append(b"[\r\n][\-\w+\.:/]+(?:\([^\)]+\))?[>#] ?$")  # IOS
-        prompt_patterns.append(b"[\r\n\x00]RP/\d+/(?:RS?P)?\d+\/CPU\d+:[^#]+(?:\([^\)]+\))?#$")  # IOS XR
-        prompt_patterns.append(b"[\r\n\x00](?P<text>[\w/ .:,\(\)\-\?]*)(?P<default>\[[\w/.:\-]*\])?(?(default)(?P<end1>(?:\?|: ?|)$)|(?P<end2>: $))")  # Interactive prompt
-        prompt_patterns.append(b"[\r\n\x00] --More-- $")  # Terminal paging
+        prompt_patterns = [self.command_prompt]
+        prompt_patterns += self.get_cli_patterns()
         _, _, response = self.telnet.expect(prompt_patterns)
         return {"response": response.decode()}
 
