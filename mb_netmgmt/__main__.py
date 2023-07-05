@@ -121,6 +121,21 @@ class Protocol:
         return stub["responses"][0].get("proxy")
 
 
+def get_cli_patterns():
+    patterns = []
+    patterns.append(
+        b"[\r\n\x1b\[K][\-\w+\.:/]+(?:\([^\)]+\))?[>#] ?$"
+    )  # based on IOS driver of Exscript
+    patterns.append(
+        b"[\r\n\x00\x1b\[K]RP/\d+/(?:RS?P)?\d+\/CPU\d+:[^#]+(?:\([^\)]+\))?#$"
+    )  # based on IOS XR driver of Exscript
+    patterns.append(
+        b"[\r\n\x00\x1b\[K](?P<text>[\w/ .:,\(\)\-\?]*)(?P<default>\[[\w/.,():\-]*\])?(?(default)(?P<end1>(?:\?|: ?| |)$)|(?P<end2>: $))"
+    )  # Interactive prompt
+    patterns.append(b"[\r\n\x00\x1b\[K] --More-- $")  # Terminal paging
+    return patterns
+
+
 def disable_algorithms(disabled_algorithms):
     # https://github.com/ncclient/ncclient/issues/526#issuecomment-1096563028
     class MonkeyPatchedTransport(paramiko.Transport):

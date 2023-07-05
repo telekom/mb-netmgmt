@@ -17,12 +17,13 @@
 # You should have received a copy of the GNU General Public License
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
+import re
 from socketserver import BaseRequestHandler
 from socketserver import ThreadingTCPServer as Server
 
 import paramiko
 
-from mb_netmgmt.__main__ import Protocol
+from mb_netmgmt.__main__ import Protocol, get_cli_patterns
 
 stopped = False
 
@@ -88,19 +89,20 @@ class Handler(BaseRequestHandler, Protocol):
         return response
 
     def read_proxy_response(self):
-        message = self.read_message(
-            self.channel.upstream, [self.channel.command_prompt]
-        )
+        prompt_patterns = [self.channel.command_prompt]
+        prompt_patterns += get_cli_patterns()
+        message = self.read_message(self.channel.upstream, prompt_patterns)
         return {"response": message.decode()}
 
-    def read_message(self, channel, terminators):
+    def read_message(self, channel, patterns):
         message = b""
         end_of_message = False
         while not end_of_message and not stopped:
             message += channel.recv(1024)
-            for terminator in terminators:
-                if terminator in message:
+            for pattern in patterns:
+                if re.findall(pattern, message):
                     end_of_message = True
+                    break
         return message
 
 
