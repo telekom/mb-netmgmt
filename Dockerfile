@@ -12,4 +12,4 @@ RUN apk add \
     musl-dev \
     python3-dev
 RUN pip install mb-netmgmt
-WORKDIR /usr/lib/python3.10/site-packages/mb_netmgmt
+WORKDIR /usr/lib/python3.11/site-packages/mb_netmgmt
