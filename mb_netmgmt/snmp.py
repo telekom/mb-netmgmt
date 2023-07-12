@@ -18,11 +18,13 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 import binascii
+import logging
 from base64 import b64decode, b64encode
 from socket import SOCK_DGRAM, socket
 from socketserver import DatagramRequestHandler, ThreadingUDPServer, UDPServer
 
 from scapy.asn1.asn1 import ASN1_Class_UNIVERSAL
+from scapy.asn1.ber import BER_Decoding_Error
 from scapy.layers.snmp import SNMP, SNMPbulk, SNMPresponse, SNMPvarbind
 
 from mb_netmgmt.__main__ import Protocol
@@ -60,7 +62,11 @@ class Handler(DatagramRequestHandler, Protocol):
 
     def read_proxy_response(self):
         bytes_response = self.upstream_socket.recv(UDPServer.max_packet_size)
-        snmp_response = SNMP(bytes_response)
+        try:
+            snmp_response = SNMP(bytes_response)
+        except BER_Decoding_Error:
+            logging.error(bytes_response)
+            raise
         result = dict()
         for varbind in snmp_response.PDU.varbindlist:
             result[varbind.oid.val] = {
