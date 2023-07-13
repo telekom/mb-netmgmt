@@ -10,5 +10,5 @@ dependencies = [
     "paramiko>=2.12.0",
     "ruamel.yaml",
     "requests",
-    "scapy@git+https://github.com/christian-sahlmann/scapy@christian-sahlmann/ber-decoding-3900",
+    "scapy",
 ]
