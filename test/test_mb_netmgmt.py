@@ -9,6 +9,7 @@ import paramiko
 import pytest
 from ncclient.transport.session import BASE_NS_1_0, to_ele
 from ncclient.transport.ssh import MSG_DELIM
+from scapy.layers.snmp import SNMPvarbind
 
 from mb_netmgmt import mb, netconf, ssh, use_scalar_strings, yaml
 from mb_netmgmt.__main__ import create_server, get_cli_patterns
@@ -237,3 +238,12 @@ def test_cli_patterns(cli_response, result):
             matched = True
             break
     assert matched == result
+
+
+def test_snmp_no_such_instance():
+    pkt = b"0\x10\x06\x0c+\x06\x01\x02\x01/\x01\x01\x01\x01\n\x01\x81\x00"
+    result = SNMPvarbind(pkt)
+    assert not result.noSuchObject
+    assert result.noSuchInstance
+    assert not result.endOfMibView
+    assert bytes(result) == pkt

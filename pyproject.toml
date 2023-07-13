@@ -5,4 +5,10 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "mb_netmgmt"
 dynamic = ["version", "description"]
-dependencies = ["ncclient", "paramiko>=2.12.0", "ruamel.yaml", "requests", "scapy"]
+dependencies = [
+    "ncclient",
+    "paramiko>=2.12.0",
+    "ruamel.yaml",
+    "requests",
+    "scapy@git+https://github.com/christian-sahlmann/scapy@christian-sahlmann/ber-decoding-3900",
+]
