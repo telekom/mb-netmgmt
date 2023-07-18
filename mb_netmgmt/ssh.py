@@ -97,12 +97,20 @@ class Handler(BaseRequestHandler, Protocol):
     def read_message(self, channel, patterns):
         message = b""
         end_of_message = False
+        multi_row_command_length = 0
         while not end_of_message and not stopped:
-            message += channel.recv(1024)
-            for pattern in patterns:
-                if re.findall(pattern, message):
-                    end_of_message = True
-                    break
+            message += channel.recv(1)
+            inside_quotes = len(re.findall(b"'", message))
+            if (inside_quotes != 0) and (inside_quotes % 2 != 0):
+                multi_row_command = True
+                multi_row_command_length = len(message)
+            else:
+                multi_row_command = False
+            if not multi_row_command:
+                for pattern in patterns:
+                    if re.findall(pattern, message[multi_row_command_length:]):
+                        end_of_message = True
+                        break
         return message
 
 
