@@ -126,7 +126,12 @@ def decode(value):
 
 
 def to_dict(varbind):
+    val = None
+    tag = None
+    if varbind.value:
+        val = decode(varbind.value.val)
+        tag = str(varbind.value.tag)
     return {
-        "val": decode(varbind.value.val),
-        "tag": str(varbind.value.tag),
+        "val": val,
+        "tag": tag,
     }
