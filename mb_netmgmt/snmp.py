@@ -111,8 +111,7 @@ class Handler(DatagramRequestHandler, Protocol):
                 value = b64decode(value, validate=True)
             except (binascii.Error, TypeError):
                 pass
-            asn1_class = ASN1_Class_UNIVERSAL.__dict__[response["tag"]]
-            result += SNMPvarbind(oid=oid, value=asn1_class.asn1_object(value))
+            result += to_varbind(oid, value, response["tag"])
         return result
 
 
@@ -142,3 +141,8 @@ def to_dict(varbind):
     if varbind.endOfMibView:
         result["endOfMibView"] = 0
     return result
+
+
+def to_varbind(oid, value, tag):
+    asn1_class = ASN1_Class_UNIVERSAL.__dict__[tag]
+    return SNMPvarbind(oid=oid, value=asn1_class.asn1_object(value))
