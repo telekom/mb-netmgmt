@@ -9,7 +9,7 @@ import paramiko
 import pytest
 from ncclient.transport.session import BASE_NS_1_0, to_ele
 from ncclient.transport.ssh import MSG_DELIM
-from scapy.layers.snmp import SNMPvarbind
+from scapy.layers.snmp import ASN1_NULL, SNMPvarbind
 
 from mb_netmgmt import mb, netconf, snmp, ssh, use_scalar_strings, yaml
 from mb_netmgmt.__main__ import create_server, get_cli_patterns
@@ -256,6 +256,6 @@ def test_to_dict():
 
 
 def test_no_such_instance_to_dict():
-    varbind = SNMPvarbind(value=None, noSuchInstance=0)
+    varbind = SNMPvarbind(value=None, noSuchInstance=ASN1_NULL(0))
     result = snmp.to_dict(varbind)
-    assert result == {"tag": None, "val": None}
+    assert result == {"tag": None, "val": None, "noSuchInstance": 0}

@@ -131,7 +131,14 @@ def to_dict(varbind):
     if varbind.value:
         val = decode(varbind.value.val)
         tag = str(varbind.value.tag)
-    return {
+    result = {
         "val": val,
         "tag": tag,
     }
+    if varbind.noSuchObject:
+        result["noSuchObject"] = 0
+    if varbind.noSuchInstance:
+        result["noSuchInstance"] = 0
+    if varbind.endOfMibView:
+        result["endOfMibView"] = 0
+    return result
