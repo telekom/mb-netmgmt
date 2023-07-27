@@ -69,10 +69,7 @@ class Handler(DatagramRequestHandler, Protocol):
             raise
         result = dict()
         for varbind in snmp_response.PDU.varbindlist:
-            result[varbind.oid.val] = {
-                "val": decode(varbind.value.val),
-                "tag": str(varbind.value.tag),
-            }
+            result[varbind.oid.val] = to_dict(varbind)
 
         return result
 
@@ -126,3 +123,10 @@ def decode(value):
         return value
     except UnicodeDecodeError:
         return b64encode(value).decode()
+
+
+def to_dict(varbind):
+    return {
+        "val": decode(varbind.value.val),
+        "tag": str(varbind.value.tag),
+    }
