@@ -11,7 +11,7 @@ from ncclient.transport.session import BASE_NS_1_0, to_ele
 from ncclient.transport.ssh import MSG_DELIM
 from scapy.layers.snmp import SNMPvarbind
 
-from mb_netmgmt import mb, netconf, ssh, use_scalar_strings, yaml
+from mb_netmgmt import mb, netconf, snmp, ssh, use_scalar_strings, yaml
 from mb_netmgmt.__main__ import create_server, get_cli_patterns
 
 port = 8081
@@ -247,3 +247,9 @@ def test_snmp_no_such_instance():
     assert result.noSuchInstance
     assert not result.endOfMibView
     assert bytes(result) == pkt
+
+
+def test_to_dict():
+    varbind = SNMPvarbind()
+    result = snmp.to_dict(varbind)
+    assert result == {"tag": "NULL", "val": 0}
