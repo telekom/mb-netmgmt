@@ -125,10 +125,7 @@ def to_dict(varbind):
     if varbind.value:
         val = decode(varbind.value.val)
         tag = str(varbind.value.tag)
-    result = {
-        "val": val,
-        "tag": tag,
-    }
+    result = {"val": val, "tag": tag}
     if varbind.noSuchObject:
         result["noSuchObject"] = 0
     if varbind.noSuchInstance:
