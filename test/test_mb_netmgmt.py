@@ -262,5 +262,12 @@ def test_no_such_instance_to_dict():
 
 
 def test_to_varbind():
-    result = snmp.to_varbind("1.3", 0, "NULL")
+    result = snmp.to_varbind("1.3", response=dict(val=0, tag="NULL"))
     assert result == SNMPvarbind(oid="1.3", value=0)
+
+
+def test_to_varbind_no_such_instance():
+    result = snmp.to_varbind("1.3", response=dict(val=None, tag=None, noSuchInstance=0))
+    assert result == SNMPvarbind(
+        oid="1.3", value=None, noSuchObject=None, noSuchInstance=0, endOfMibView=None
+    )

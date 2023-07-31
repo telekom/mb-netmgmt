@@ -106,12 +106,7 @@ class Handler(DatagramRequestHandler, Protocol):
         for oid, response in json.items():
             if oid.startswith("_"):
                 continue
-            value = response["val"]
-            try:
-                value = b64decode(value, validate=True)
-            except (binascii.Error, TypeError):
-                pass
-            result += to_varbind(oid, value, response["tag"])
+            result += to_varbind(oid, response)
         return result
 
 
@@ -143,6 +138,14 @@ def to_dict(varbind):
     return result
 
 
-def to_varbind(oid, value, tag):
-    asn1_class = ASN1_Class_UNIVERSAL.__dict__[tag]
-    return SNMPvarbind(oid=oid, value=asn1_class.asn1_object(value))
+def to_varbind(oid, response):
+    value = response["val"]
+    try:
+        value = b64decode(value, validate=True)
+        asn1_class = ASN1_Class_UNIVERSAL.__dict__[response["tag"]]
+        value = asn1_class.asn1_object(value)
+    except (binascii.Error, TypeError):
+        pass
+    del response["val"]
+    del response["tag"]
+    return SNMPvarbind(oid=oid, value=value, **response)
