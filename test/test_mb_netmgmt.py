@@ -42,6 +42,7 @@ cli_responses = [
     (b"\rDo you wish to continue?[confirm(y/n)]", True),
     (b"\r --More-- ", True),
     (b"\rSending 5, 100-byte ICMP Echos to 8.8.8.8, timeout is 2 seconds:", False),
+    (b"\rProceed with switchover 0/8/CPU0 -> 0/7/CPU0? [confirm]", True),
 ]
 
 
