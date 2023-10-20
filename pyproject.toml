@@ -6,7 +6,7 @@ build-backend = "flit_core.buildapi"
 name = "mb_netmgmt"
 dynamic = ["version", "description"]
 dependencies = [
-    "ncclient",
+    "ncclient>=0.6.15",
     "paramiko>=2.12.0",
     "ruamel.yaml",
     "requests",

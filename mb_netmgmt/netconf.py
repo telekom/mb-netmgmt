@@ -27,6 +27,7 @@ from ncclient.manager import connect
 from ncclient.transport.parser import DefaultXMLParser
 from ncclient.transport.session import (
     BASE_NS_1_0,
+    MSG_DELIM,
     HelloHandler,
     NetconfBase,
     SessionListener,
@@ -34,7 +35,7 @@ from ncclient.transport.session import (
     sub_ele,
     to_ele,
 )
-from ncclient.transport.ssh import MSG_DELIM, PORT_NETCONF_DEFAULT, SSHSession
+from ncclient.transport.ssh import PORT_NETCONF_DEFAULT, SSHSession
 
 from mb_netmgmt.__main__ import Protocol
 from mb_netmgmt.ssh import start_server
