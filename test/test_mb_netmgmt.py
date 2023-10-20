@@ -7,8 +7,7 @@ from urllib.parse import urlparse
 import ncclient.manager
 import paramiko
 import pytest
-from ncclient.transport.session import BASE_NS_1_0, to_ele
-from ncclient.transport.ssh import MSG_DELIM
+from ncclient.transport.session import BASE_NS_1_0, MSG_DELIM, to_ele
 from scapy.layers.snmp import ASN1_NULL, SNMPvarbind
 
 from mb_netmgmt import mb, netconf, snmp, ssh, use_scalar_strings, yaml
