@@ -20,11 +20,10 @@
 import re
 import telnetlib
 import time
-from socketserver import StreamRequestHandler, TCPServer
+from socketserver import StreamRequestHandler
+from socketserver import ThreadingTCPServer as Server
 
 from mb_netmgmt.__main__ import Protocol, get_cli_patterns
-
-Server = TCPServer
 
 
 class Handler(StreamRequestHandler, Protocol):

@@ -190,7 +190,7 @@ def test_netconf_default_response():
 def test_netconf_private_key():
     with mb(
         [
-            {"protocol": "netconf", "port": 830, "stubs": []},
+            {"protocol": "netconf", "port": 8832, "stubs": []},
             {
                 "protocol": "netconf",
                 "port": port,
@@ -199,7 +199,7 @@ def test_netconf_private_key():
                         "responses": [
                             {
                                 "proxy": {
-                                    "to": f"netconf://{os.environ['NETCONF_USERNAME']}@localhost",
+                                    "to": f"netconf://{os.environ['NETCONF_USERNAME']}@localhost:8832",
                                     "key": os.environ["NETCONF_KEY"],
                                 }
                             },

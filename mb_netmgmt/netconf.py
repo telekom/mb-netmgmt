@@ -19,7 +19,7 @@
 
 import logging
 from socketserver import BaseRequestHandler
-from socketserver import TCPServer as Server
+from socketserver import ThreadingTCPServer as Server
 
 from lxml import etree
 from ncclient.devices.default import DefaultDeviceHandler
