@@ -65,7 +65,7 @@ class Handler(StreamRequestHandler, Protocol):
     def read_proxy_response(self):
         prompt_patterns = [self.command_prompt]
         prompt_patterns += get_cli_patterns()
-        _, _, response = self.telnet.expect(prompt_patterns)
+        _, _, response = self.telnet.expect(prompt_patterns, timeout=600)
         return {"response": response.decode()}
 
     def handle_username_prompt(self):
