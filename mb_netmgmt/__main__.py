@@ -68,11 +68,14 @@ class Protocol:
         except KeyError:
             proxy_response = self.read_proxy_response()
             logging.debug("proxy_response: %s", proxy_response)
-            response = requests.post(
-                mb_response["callbackURL"], json={"proxyResponse": proxy_response}
-            )
-            response.raise_for_status()
-            return response.json()
+            return self.post_proxy_response(mb_response, proxy_response)
+
+    def post_proxy_response(self, mb_response, proxy_response):
+        response = requests.post(
+            mb_response["callbackURL"], json={"proxyResponse": proxy_response}
+        )
+        response.raise_for_status()
+        return response.json()
 
     def send_upstream(self, request, request_id):
         raise NotImplementedError
@@ -130,7 +133,7 @@ def get_cli_patterns():
         b"[\r\n\x00\x1b\[K]RP/\d+/(?:RS?P)?\d+\/CPU\d+:[^#]+(?:\([^\)]+\))?#$"
     )  # based on IOS XR driver of Exscript
     patterns.append(
-        b"[\r\n\x00\x1b\[K]+(?P<text>[A-Z][\w\/ .:,>\(\)\-\?\"]*[^A-Z])(?P<default>\[[\w\/.,():\-]*\])?(?(default)(?P<end1>(?:\?|: ?| |)$)|(?P<end2>: $))"
+        b'[\r\n\x00\x1b\[K]+(?P<text>[A-Z][\w\/ .:,>\(\)\-\?"]*[^A-Z])(?P<default>\[[\w\/.,():\-]*\])?(?(default)(?P<end1>(?:\?|: ?| |)$)|(?P<end2>: $))'
     )  # Interactive prompt
     patterns.append(b"[\r\n\x00\x1b\[K] --More-- $")  # Terminal paging
     return patterns

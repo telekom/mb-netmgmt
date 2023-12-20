@@ -78,9 +78,16 @@ class Handler(BaseRequestHandler, Protocol):
         )
 
     def handle_prompt(self):
-        hello = to_ele(
-            HelloHandler.build(DefaultDeviceHandler._BASE_CAPABILITIES, None)
-        )
+        mb_response = self.post_request({"rpc": ""})
+        try:
+            response = mb_response["response"]
+        except KeyError:
+            try:
+                capabilities = [c for c in self.manager.server_capabilities]
+            except AttributeError:
+                capabilities = DefaultDeviceHandler._BASE_CAPABILITIES
+            response = self.post_proxy_response(mb_response, capabilities)
+        hello = to_ele(HelloHandler.build(response, None))
 
         # A server sending the <hello> element MUST include a <session-id>
         # element containing the session ID for this NETCONF session.
