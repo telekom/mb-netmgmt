@@ -81,6 +81,8 @@ class Handler(BaseRequestHandler, Protocol):
         mb_response = self.post_request({"rpc": ""})
         try:
             response = mb_response["response"]
+            if not response:
+                response = DefaultDeviceHandler._BASE_CAPABILITIES
         except KeyError:
             try:
                 capabilities = [c for c in self.manager.server_capabilities]
