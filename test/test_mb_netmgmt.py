@@ -8,6 +8,7 @@ import ncclient.manager
 import paramiko
 import pytest
 from ncclient.transport.session import BASE_NS_1_0, MSG_DELIM, to_ele
+from ncclient.devices.default import DefaultDeviceHandler
 from scapy.layers.snmp import ASN1_NULL, SNMPvarbind
 
 from mb_netmgmt import mb, netconf, snmp, ssh, use_scalar_strings, yaml
@@ -133,7 +134,7 @@ def test_create_netconf_server():
 
 def mock_post_request(handler, request):
     if request == {"rpc": ""}:
-        return {"response": ["urn:ietf:params:netconf:base:1.0"]}
+        return {"response": DefaultDeviceHandler._BASE_CAPABILITIES}
     return {"response": {"rpc-reply": mock_response}}
 
 
