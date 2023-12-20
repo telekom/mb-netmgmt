@@ -132,6 +132,8 @@ def test_create_netconf_server():
 
 
 def mock_post_request(handler, request):
+    if request == {"rpc": ""}:
+        return {"response": ["urn:ietf:params:netconf:base:1.0"]}
     return {"response": {"rpc-reply": mock_response}}
 
 
