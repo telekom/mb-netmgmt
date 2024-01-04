@@ -7,12 +7,12 @@ from urllib.parse import urlparse
 import ncclient.manager
 import paramiko
 import pytest
-from ncclient.transport.session import BASE_NS_1_0, MSG_DELIM, to_ele
 from ncclient.devices.default import DefaultDeviceHandler
+from ncclient.transport.session import BASE_NS_1_0, MSG_DELIM, to_ele
 from scapy.layers.snmp import ASN1_NULL, SNMPvarbind
 
 from mb_netmgmt import mb, netconf, snmp, ssh, use_scalar_strings, yaml
-from mb_netmgmt.__main__ import create_server, get_cli_patterns
+from mb_netmgmt.__main__ import create_server, get_cli_patterns, parse_to
 
 port = 8081
 prompt = b"prompt#"
@@ -280,3 +280,10 @@ def test_to_varbind_no_such_instance():
     assert result == SNMPvarbind(
         oid="1.3", value=None, noSuchObject=None, noSuchInstance=0, endOfMibView=None
     )
+
+
+def test_parse_to():
+    assert parse_to("telnet://localhost").hostname == "localhost"
+    assert parse_to("telnet://localhost:23").port == 23
+    with pytest.raises(ValueError):
+        parse_to("localhost")

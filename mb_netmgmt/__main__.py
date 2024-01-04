@@ -107,7 +107,7 @@ class Protocol:
             if proxy:
                 self.save_key(proxy)
                 disable_algorithms(proxy.get("disabled_algorithms", {}))
-                return urlparse(proxy["to"])
+                return parse_to(proxy["to"])
         except (IndexError, AttributeError):
             pass
 
@@ -122,6 +122,13 @@ class Protocol:
 
     def get_proxy(self, stub):
         return stub["responses"][0].get("proxy")
+
+
+def parse_to(url: str):
+    to = urlparse(url)
+    if not to.hostname:
+        raise ValueError("No hostname")
+    return to
 
 
 def get_cli_patterns():
