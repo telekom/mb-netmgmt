@@ -18,7 +18,7 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 """Network Management Protocols for Mountebank"""
-__version__ = "0.0.78"
+__version__ = "0.0.79"
 
 import os
 import subprocess
@@ -107,7 +107,7 @@ def read_imposters(name):
 def proxy_imposters(to, snmp_port=161, telnet_port=23, netconf_port=830):
     return [
         proxy_imposter(snmp_port, "snmp", to, "oids"),
-        proxy_imposter(telnet_port, "telnet", to, "command"),
+        proxy_imposter(telnet_port, "telnet", f"telnet://{to}", "command"),
         proxy_imposter(
             netconf_port,
             "netconf",

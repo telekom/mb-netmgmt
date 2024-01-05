@@ -18,12 +18,13 @@
 # along with mb-netmgmt. If not, see <https://www.gnu.org/licenses/
 
 import re
-import telnetlib
 import time
 from socketserver import StreamRequestHandler
 from socketserver import ThreadingTCPServer as Server
 
-from mb_netmgmt.__main__ import Protocol, get_cli_patterns
+from Exscript.protocols import Telnet
+
+from mb_netmgmt.__main__ import Protocol
 
 
 class Handler(StreamRequestHandler, Protocol):
@@ -35,8 +36,9 @@ class Handler(StreamRequestHandler, Protocol):
         self.read_password()
         self.command_prompt = b"#"
         try:
-            self.telnet.write(self.password)
-            self.command_prompt = self.telnet.read_until(b"#").split(b"\n")[-1]
+            self.telnet.send(self.password)
+            self.command_prompt = self.telnet.expect_prompt()[1][0].encode()
+            self.telnet.app_authenticated = True
         except AttributeError:
             pass
         self.wfile.write(self.command_prompt)
@@ -52,7 +54,7 @@ class Handler(StreamRequestHandler, Protocol):
         return self.handle_request({"command": command.decode()}, request_id)
 
     def send_upstream(self, request, request_id):
-        self.telnet.write(request["command"].encode())
+        self.telnet.execute(request["command"])
 
     def read_request(self):
         return self.rfile.readline(), None
@@ -63,17 +65,17 @@ class Handler(StreamRequestHandler, Protocol):
             self.stopped = True
 
     def read_proxy_response(self):
-        prompt_patterns = [self.command_prompt]
-        prompt_patterns += get_cli_patterns()
-        _, _, response = self.telnet.expect(prompt_patterns, timeout=600)
-        return {"response": response.decode()}
+        return {"response": self.telnet.response}
 
     def handle_username_prompt(self):
         username_prompt = b"Username: "
         to = self.get_to()
         if to:
-            self.telnet = telnetlib.Telnet(to.hostname)
-            username_prompt = self.telnet.read_until(username_prompt)
+            t = Telnet(debug=4)
+            t.connect(to.hostname)
+            result = t.expect(t.get_username_prompt())
+            username_prompt = (t.response[:-1] + result[1][0]).encode()
+            self.telnet = t
         self.wfile.write(username_prompt)
 
     def read_password(self):
@@ -83,8 +85,13 @@ class Handler(StreamRequestHandler, Protocol):
             self.password = self.rfile.readline()
 
     def handle_username(self):
-        self.command_prompt = b"Password: "
-        self.handle_request({"command": self.username.decode()}, None)
+        try:
+            t = self.telnet
+            t.send(self.username)
+            password_prompt = t.expect(t.get_password_prompt())[1][0].encode()
+        except AttributeError:
+            password_prompt = b"Password: "
+        self.wfile.write(password_prompt)
 
 
 def extract_username(byte_string):

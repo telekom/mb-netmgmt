@@ -11,4 +11,5 @@ dependencies = [
     "ruamel.yaml",
     "requests",
     "scapy",
+    "exscript",
 ]
