@@ -37,7 +37,7 @@ class Handler(StreamRequestHandler, Protocol):
         self.command_prompt = b"#"
         try:
             self.telnet.send(self.password)
-            self.command_prompt = self.telnet.expect_prompt()[1][0].encode()
+            self.command_prompt = self.telnet.expect_prompt()[1].string.encode()
             self.telnet.app_authenticated = True
         except AttributeError:
             pass
@@ -74,7 +74,7 @@ class Handler(StreamRequestHandler, Protocol):
             t = Telnet(debug=4)
             t.connect(to.hostname)
             result = t.expect(t.get_username_prompt())
-            username_prompt = (t.response[:-1] + result[1][0]).encode()
+            username_prompt = (t.response[:-1] + result[1].string).encode()
             self.telnet = t
         self.wfile.write(username_prompt)
 
@@ -88,7 +88,8 @@ class Handler(StreamRequestHandler, Protocol):
         try:
             t = self.telnet
             t.send(self.username)
-            password_prompt = t.expect(t.get_password_prompt())[1][0].encode()
+            result = t.expect(t.get_password_prompt())
+            password_prompt = result[1].string.encode()
         except AttributeError:
             password_prompt = b"Password: "
         self.wfile.write(password_prompt)
