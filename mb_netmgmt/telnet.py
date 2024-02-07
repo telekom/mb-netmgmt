@@ -54,7 +54,7 @@ class Handler(StreamRequestHandler, Protocol):
         return self.handle_request({"command": command.decode()}, request_id)
 
     def send_upstream(self, request, request_id):
-        self.telnet.execute(request["command"])
+        self.telnet.send(request["command"])
 
     def read_request(self):
         return self.rfile.readline(), None
@@ -65,7 +65,8 @@ class Handler(StreamRequestHandler, Protocol):
             self.stopped = True
 
     def read_proxy_response(self):
-        return {"response": self.telnet.response}
+        _, match = self.telnet.expect_prompt()
+        return {"response": match.string}
 
     def handle_username_prompt(self):
         username_prompt = b"Username: "
