@@ -91,9 +91,9 @@ class Handler(StreamRequestHandler, Protocol):
             t.send(self.username)
             result = t.expect(t.get_password_prompt())
             password_prompt = result[1].string.encode()
+            self.wfile.write(password_prompt)
         except AttributeError:
-            password_prompt = b"Password: "
-        self.wfile.write(password_prompt)
+            self.handle_request({"command": self.username.decode()}, None)        
 
 
 def extract_username(byte_string):
