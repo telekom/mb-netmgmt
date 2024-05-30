@@ -138,7 +138,6 @@ def to_dict(varbind):
 def to_varbind(oid, response):
     value = response["val"]
     try:
-        value = b64decode(value, validate=True)
         asn1_class = ASN1_Class_UNIVERSAL.__dict__[response["tag"]]
         value = asn1_class.asn1_object(value)
     except (binascii.Error, TypeError):
