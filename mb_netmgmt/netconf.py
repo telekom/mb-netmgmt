@@ -56,11 +56,12 @@ class Handler(BaseRequestHandler, Protocol):
             self.request, self.get_to(), self.key_filename, self.handle_request
         )
         self.channel = transport.accept()
-        self.open_upstream()
-        self.session._connected = True
-        self.handle_prompt()
         self.session._transport = transport
         self.session._channel = self.channel
+        self.session._connected = True
+
+        self.open_upstream()
+        self.handle_prompt()
         self.session.run()
 
     def open_upstream(self):
