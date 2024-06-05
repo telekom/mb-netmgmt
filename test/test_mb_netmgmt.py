@@ -1,8 +1,7 @@
-import binascii
 import io
 import os
 import re
-from base64 import b64decode, b64encode
+from base64 import b64encode
 from threading import Thread
 from urllib.parse import urlparse
 
@@ -295,7 +294,7 @@ def test_parse_to():
 def test_to_varbind_with_base64encode_response():
     result = snmp.to_varbind(
         "1.3.6.1.2.1.1.2.0",
-        response=dict(val=b64encode(b'1.3.6.1.4.1.9.1.1709'), tag="OID"),
+        response=dict(val=b64encode(b"1.3.6.1.4.1.9.1.1709"), tag="OID"),
     )
     assert isinstance(result.value, ASN1_OID)
 
