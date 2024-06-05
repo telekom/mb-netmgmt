@@ -144,8 +144,7 @@ def to_varbind(oid, response):
     value = response["val"]
     try:
         value = b64decode(value, validate=True)
-        asn1_class = ASN1_Class_UNIVERSAL.__dict__[response["tag"]]
-        value = asn1_class.asn1_object(value)
+        response_to_value(value, response)
     except (binascii.Error, TypeError):
         response_to_value(value, response)
     del response["val"]
