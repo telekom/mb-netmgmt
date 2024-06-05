@@ -297,11 +297,11 @@ def test_to_varbind_with_base64encode_response():
         "1.3.6.1.2.1.1.2.0",
         response=dict(val=b64encode(b'1.3.6.1.4.1.9.1.1709'), tag="OID"),
     )
-    assert type(result.value) == ASN1_OID
+    assert isinstance(result.value, ASN1_OID)
 
 
 def test_to_varbind_without_base64encode_response():
     result = snmp.to_varbind(
         "1.3.6.1.2.1.1.2.0", response=dict(val="1.3.6.1.4.1.9.1.1709", tag="OID")
     )
-    assert type(result.value) == ASN1_OID
+    assert isinstance(result.value, ASN1_OID)
