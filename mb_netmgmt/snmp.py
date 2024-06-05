@@ -141,8 +141,11 @@ def to_varbind(oid, response):
         value = b64decode(value, validate=True)
     except (binascii.Error, TypeError):
         pass
-    asn1_class = ASN1_Class_UNIVERSAL.__dict__[response["tag"]]
-    value = asn1_class.asn1_object(value)
+    try:
+        asn1_class = ASN1_Class_UNIVERSAL.__dict__[response["tag"]]
+        value = asn1_class.asn1_object(value)
+    except KeyError:
+        pass
     del response["val"]
     del response["tag"]
     return SNMPvarbind(oid=oid, value=value, **response)
