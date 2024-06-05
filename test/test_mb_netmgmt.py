@@ -4,6 +4,8 @@ import re
 from threading import Thread
 from urllib.parse import urlparse
 
+import binascii
+from base64 import b64decode
 import ncclient.manager
 import paramiko
 import pytest
@@ -287,3 +289,18 @@ def test_parse_to():
     assert parse_to("telnet://localhost:23").port == 23
     with pytest.raises(ValueError):
         parse_to("localhost")
+
+
+def test_to_varbind_decode_error_exception():
+    with pytest.raises(binascii.Error) as exc_info:
+        value = "1.3.6.1.4.1.9.1.1709"
+        b64decode(value, validate=True)
+
+    assert str(exc_info.value) == "Only base64 data is allowed"
+
+
+def test_to_varbind_decode_error_success():
+    result = snmp.to_varbind(
+        "1.3.6.1.2.1.1.2.0", response=dict(val="1.3.6.1.4.1.9.1.1709", tag="OID")
+    )
+    assert result == SNMPvarbind(oid="1.3.6.1.2.1.1.2.0", value="1.3.6.1.4.1.9.1.1709")
