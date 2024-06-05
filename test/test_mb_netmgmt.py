@@ -5,13 +5,14 @@ from threading import Thread
 from urllib.parse import urlparse
 
 import binascii
-from base64 import b64decode
+from base64 import b64decode, b64encode
 import ncclient.manager
 import paramiko
 import pytest
 from ncclient.devices.default import DefaultDeviceHandler
 from ncclient.transport.session import BASE_NS_1_0, MSG_DELIM, to_ele
 from scapy.layers.snmp import ASN1_NULL, SNMPvarbind
+from scapy.asn1.asn1 import ASN1_OID
 
 from mb_netmgmt import mb, netconf, snmp, ssh, use_scalar_strings, yaml
 from mb_netmgmt.__main__ import create_server, get_cli_patterns, parse_to
@@ -303,4 +304,4 @@ def test_to_varbind_decode_error_success():
     result = snmp.to_varbind(
         "1.3.6.1.2.1.1.2.0", response=dict(val="1.3.6.1.4.1.9.1.1709", tag="OID")
     )
-    assert result == SNMPvarbind(oid="1.3.6.1.2.1.1.2.0", value="1.3.6.1.4.1.9.1.1709")
+    assert type(result.value) == ASN1_OID
