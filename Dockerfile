@@ -11,6 +11,7 @@ RUN apk add \
     gcc \
     musl-dev \
     python3-dev
+
 RUN pip install scapy@git+https://github.com/secdev/scapy@7f5abca9fbbe5f5d97322cd8610f789a29c224f6
 WORKDIR /usr/lib/python3.11/site-packages
 COPY . /usr/lib/python3.11/site-packages/mb_netmgmt
