@@ -25,6 +25,7 @@ from socketserver import DatagramRequestHandler, ThreadingUDPServer, UDPServer
 
 # Disable the auto-loading of the routing tables
 from scapy.config import conf
+
 conf.route_autoload = False
 conf.route6_autoload = False
 
