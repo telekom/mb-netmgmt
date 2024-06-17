@@ -23,12 +23,6 @@ from base64 import b64decode, b64encode
 from socket import SOCK_DGRAM, socket
 from socketserver import DatagramRequestHandler, ThreadingUDPServer, UDPServer
 
-# Disable the auto-loading of the routing tables
-from scapy.config import conf
-
-conf.route_autoload = False
-conf.route6_autoload = False
-
 from scapy.asn1.asn1 import ASN1_Class_UNIVERSAL
 from scapy.asn1.ber import BER_Decoding_Error
 from scapy.layers.snmp import SNMP, SNMPbulk, SNMPresponse, SNMPvarbind
