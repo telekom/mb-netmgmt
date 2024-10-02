@@ -10,6 +10,6 @@ dependencies = [
     "paramiko>=2.12.0",
     "ruamel.yaml",
     "requests",
-    "scapy",
+    "scapy>=2.6.0",
     "exscript",
 ]
