@@ -49,6 +49,8 @@ class Handler(BaseRequestHandler, Protocol):
         session.add_listener(Listener(super().handle_request))
         self.parser = DefaultXMLParser(session)
         self.session = session
+        self.original_transport_read = self.session._transport_read
+        self.session._transport_read = self.transport_read
 
     def handle(self):
         self.callback_url = self.server.callback_url
@@ -116,6 +118,12 @@ class Handler(BaseRequestHandler, Protocol):
         reply = response.get("rpc-reply", f'<rpc-reply xmlns="{BASE_NS_1_0}"/>')
         message = add_message_id(reply, request_id)
         self.session.send(message)
+
+    def transport_read(self):
+        result = self.original_transport_read()
+        if result.startswith(b"#"):
+            return b"\n" + result
+        return result
 
 
 class Listener(SessionListener):
