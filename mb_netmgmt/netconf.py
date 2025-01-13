@@ -41,6 +41,7 @@ from mb_netmgmt.__main__ import Protocol
 from mb_netmgmt.ssh import start_server
 
 stopped = False
+NETCONF_11 = "urn:ietf:params:netconf:base:1.1"
 
 
 class Handler(BaseRequestHandler, Protocol):
@@ -102,8 +103,8 @@ class Handler(BaseRequestHandler, Protocol):
 
         self.channel.sendall(to_xml(hello) + MSG_DELIM.decode())
 
-        def init_cb(id, capabilities):
-            if "urn:ietf:params:netconf:base:1.1" in capabilities:
+        def init_cb(id, client_capabilities):
+            if NETCONF_11 in client_capabilities and NETCONF_11 in capabilities:
                 self.session._base = NetconfBase.BASE_11
 
         self.session.add_listener(HelloHandler(init_cb, lambda ex: None))
