@@ -4,7 +4,8 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "mb_netmgmt"
-dynamic = ["version", "description"]
+version = "0.0.90"
+dynamic = ["description"]
 dependencies = [
     "ncclient>=0.6.15",
     "paramiko>=2.12.0",
@@ -13,3 +14,6 @@ dependencies = [
     "scapy>=2.6.0",
     "exscript",
 ]
+
+[tool.uv]
+dev-dependencies = ["pytest", "flit"]

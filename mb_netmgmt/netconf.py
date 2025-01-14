@@ -104,7 +104,7 @@ class Handler(BaseRequestHandler, Protocol):
         self.channel.sendall(to_xml(hello) + MSG_DELIM.decode())
 
         def init_cb(id, client_capabilities):
-            if NETCONF_11 in client_capabilities and NETCONF_11 in capabilities:
+            if NETCONF_11 in client_capabilities and NETCONF_11 in response:
                 self.session._base = NetconfBase.BASE_11
 
         self.session.add_listener(HelloHandler(init_cb, lambda ex: None))
