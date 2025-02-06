@@ -112,12 +112,13 @@ class Protocol:
             pass
 
     def save_key(self, proxy):
-        keyfile = tempfile.NamedTemporaryFile("w")
-        try:
-            keyfile.write(proxy["key"])
-            keyfile.flush()
-            self.key_filename = keyfile.name
-        except KeyError:
+        key = proxy.get("key")
+        if key:
+            self.keyfile = tempfile.NamedTemporaryFile("w")
+            self.keyfile.write(key)
+            self.keyfile.flush()
+            self.key_filename = self.keyfile.name
+        else:
             self.key_filename = None
 
     def get_proxy(self, stub):
