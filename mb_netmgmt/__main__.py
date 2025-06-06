@@ -144,6 +144,7 @@ def get_cli_patterns():
         b'[\r\n\x00\x1b\[K]+(?P<text>[A-Z][\w\/ .:,>\(\)\-\?"]*[^A-Z])(?P<default>\[[\w\/.,():\-]*\])?(?(default)(?P<end1>(?:\?|: ?| |)$)|(?P<end2>: $))'
     )  # Interactive prompt
     patterns.append(b"[\r\n\x00\x1b\[K] --More-- $")  # Terminal paging
+    patterns.append(b"[\r\n\x00\x1b\[K]\[(?:[a-z-]*_)?node\d_RS?P\d_CPU\d:(?P<path>[~\.\/\w-]+)\]\$$")  # unix shell inside IOS XR
     return patterns
 
 
