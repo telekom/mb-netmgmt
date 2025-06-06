@@ -35,7 +35,7 @@ info: [mb:2525] mountebank v2.6.0 now taking orders - point your browser to http
 
 ```sh
 $ npm install -g mountebank
-$ pip install mb-netmgmt
+$ pip install git+https://github.com/telekom/mb-netmgmt
 $ wget https://raw.githubusercontent.com/telekom/mb-netmgmt/main/mb_netmgmt/protocols.json
 $ mb
 info: [mb:2525] Loaded custom protocol snmp
