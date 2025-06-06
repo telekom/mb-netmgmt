@@ -71,6 +71,15 @@ class Handler(BaseRequestHandler, Protocol):
         to = self.get_to()
         if not to:
             return
+        timeout = getattr(to, "timeout", None)
+        if timeout is None:
+            # Try to get from proxy dict if available
+            if hasattr(self, "proxy") and isinstance(self.proxy, dict):
+                timeout = self.proxy.get("timeout")
+        if timeout is None:
+            timeout = 60
+        else:
+            timeout = int(timeout)
         self.manager = connect(
             host=to.hostname,
             port=to.port or PORT_NETCONF_DEFAULT,
@@ -78,7 +87,7 @@ class Handler(BaseRequestHandler, Protocol):
             password=to.password,
             key_filename=self.key_filename,
             hostkey_verify=False,
-            timeout=60,
+            timeout=timeout,
         )
 
     def handle_prompt(self):
