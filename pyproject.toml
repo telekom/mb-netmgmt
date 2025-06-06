@@ -4,7 +4,7 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "mb_netmgmt"
-version = "0.0.91"
+version = "0.0.92"
 dynamic = ["description"]
 dependencies = [
     "ncclient==0.6.16",
