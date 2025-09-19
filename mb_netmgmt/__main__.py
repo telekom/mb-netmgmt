@@ -161,6 +161,9 @@ def disable_algorithms(disabled_algorithms):
 
 if __name__ == "__main__":
     protocol_name = sys.argv[1]
+    #mapping for renamed module
+    if protocol_name == "ssh":
+        protocol_name = "ssh_protocol"
     protocol = importlib.import_module(f"mb_netmgmt.{protocol_name}")
 
     args = json.loads(sys.argv[2])

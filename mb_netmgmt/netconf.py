@@ -38,7 +38,7 @@ from ncclient.transport.session import (
 from ncclient.transport.ssh import PORT_NETCONF_DEFAULT, SSHSession
 
 from mb_netmgmt.__main__ import Protocol
-from mb_netmgmt.ssh import start_server
+from mb_netmgmt.ssh_protocol import start_server
 
 stopped = False
 NETCONF_11 = "urn:ietf:params:netconf:base:1.1"

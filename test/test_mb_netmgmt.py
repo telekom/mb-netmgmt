@@ -13,7 +13,7 @@ from ncclient.transport.session import BASE_NS_1_0, MSG_DELIM, to_ele
 from scapy.asn1.asn1 import ASN1_OID
 from scapy.layers.snmp import ASN1_NULL, SNMPvarbind
 
-from mb_netmgmt import mb, netconf, snmp, ssh, use_scalar_strings, yaml
+from mb_netmgmt import mb, netconf, snmp, ssh_protocol, use_scalar_strings, yaml
 from mb_netmgmt.__main__ import create_server, get_cli_patterns, parse_to
 
 port = 8081
@@ -104,7 +104,7 @@ def prompt_stub():
 
 
 def test_create_ssh_server():
-    server = create_server(ssh, port, None)
+    server = create_server(ssh_protocol, port, None)
     Thread(target=server.serve_forever).start()
     connect_ssh().close()
     server.shutdown()
