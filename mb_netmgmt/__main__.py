@@ -129,7 +129,7 @@ def parse_to(url: str):
     to = urlparse(url)
     if not to.hostname:
         raise ValueError("No hostname")
-    
+
     return to
 
 
@@ -145,7 +145,9 @@ def get_cli_patterns():
         b'[\r\n\x00\x1b\[K]+(?P<text>[A-Z][\w\/ .:,>\(\)\-\?"]*[^A-Z])(?P<default>\[[\w\/.,():\-]*\])?(?(default)(?P<end1>(?:\?|: ?| |)$)|(?P<end2>: $))'
     )  # Interactive prompt
     patterns.append(b"[\r\n\x00\x1b\[K] --More-- $")  # Terminal paging
-    patterns.append(b"[\r\n\x00\x1b\[K]\[(?:[a-z-]*_)?node\d_RS?P\d_CPU\d:(?P<path>[~\.\/\w-]+)\]\$$")  # unix shell inside IOS XR
+    patterns.append(
+        b"[\r\n\x00\x1b\[K]\[(?:[a-z-]*_)?node\d_RS?P\d_CPU\d:(?P<path>[~\.\/\w-]+)\]\$$"
+    )  # unix shell inside IOS XR
     return patterns
 
 
@@ -161,7 +163,7 @@ def disable_algorithms(disabled_algorithms):
 
 if __name__ == "__main__":
     protocol_name = sys.argv[1]
-    #mapping for renamed module
+    # mapping for renamed module
     if protocol_name == "ssh":
         protocol_name = "ssh_protocol"
     protocol = importlib.import_module(f"mb_netmgmt.{protocol_name}")

@@ -41,7 +41,7 @@ class ParamikoServer(paramiko.ServerInterface):
         self.password = password
         return paramiko.AUTH_SUCCESSFUL
 
-    def check_auth_publickey(self, username):
+    def check_auth_publickey(self, username, key):
         self.username = username
         return paramiko.AUTH_SUCCESSFUL
 
@@ -115,8 +115,17 @@ class Handler(BaseRequestHandler, Protocol):
         return message
 
 
-def open_upstream(to, key_filename, term, width, height, pixelwidth, pixelheight, 
-                  username=None, password=None):
+def open_upstream(
+    to,
+    key_filename,
+    term,
+    width,
+    height,
+    pixelwidth,
+    pixelheight,
+    username=None,
+    password=None,
+):
     if not to:
         return
     client = paramiko.SSHClient()
