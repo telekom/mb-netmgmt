@@ -136,17 +136,17 @@ def parse_to(url: str):
 def get_cli_patterns():
     patterns = []
     patterns.append(
-        b"[\r\n\x1b\[K][\-\w+\.:/]+(?:\([^\)]+\))?[>#] ?$"
+        rb"[\r\n\x1b\[K][\-\w+\.:/]+(?:\([^\)]+\))?[>#] ?$"
     )  # based on IOS driver of Exscript
     patterns.append(
-        b"[\r\n\x00\x1b\[K]RP/\d+/(?:RS?P)?\d+\/CPU\d+:[^#]+(?:\([^\)]+\))?#$"
+        rb"[\r\n\x00\x1b\[K]RP/\d+/(?:RS?P)?\d+\/CPU\d+:[^#]+(?:\([^\)]+\))?#$"
     )  # based on IOS XR driver of Exscript
     patterns.append(
-        b'[\r\n\x00\x1b\[K]+(?P<text>[A-Z][\w\/ .:,>\(\)\-\?"]*[^A-Z])(?P<default>\[[\w\/.,():\-]*\])?(?(default)(?P<end1>(?:\?|: ?| |)$)|(?P<end2>: $))'
+        rb'[\r\n\x00\x1b\[K]+(?P<text>[A-Z][\w\/ .:,>\(\)\-\?"]*[^A-Z])(?P<default>\[[\w\/.,():\-]*\])?(?(default)(?P<end1>(?:\?|: ?| |)$)|(?P<end2>: $))'
     )  # Interactive prompt
-    patterns.append(b"[\r\n\x00\x1b\[K] --More-- $")  # Terminal paging
+    patterns.append(rb"[\r\n\x00\x1b\[K] --More-- $")  # Terminal paging
     patterns.append(
-        b"[\r\n\x00\x1b\[K]\[(?:[a-z-]*_)?node\d_RS?P\d_CPU\d:(?P<path>[~\.\/\w-]+)\]\$$"
+        rb"[\r\n\x00\x1b\[K]\[(?:[a-z-]*_)?node\d_RS?P\d_CPU\d:(?P<path>[~\.\/\w-]+)\]\$$"
     )  # unix shell inside IOS XR
     return patterns
 
